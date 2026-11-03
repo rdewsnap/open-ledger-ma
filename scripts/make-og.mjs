@@ -71,22 +71,21 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" 
     <path d="M16 23c14 0 14 -5 32 -5v9.2c-17 0-17 5-32 5Z" fill="${C.clay}"/>
     <path d="M16 32.6c14 0 14 10.4 32 10.4v6c-18 0-18-10.8-32-10.8Z" fill="${C.clay}" opacity="0.55"/>
   </g>
-  <text x="156" y="128" font-family="Fraunces" font-weight="600" font-size="68" letter-spacing="-1.2" fill="${C.ink}">Open Ledger <tspan fill="${C.clay}">MA</tspan></text>
-  <text x="74" y="214" font-family="Fraunces" font-weight="500" font-size="44" letter-spacing="-0.6" fill="${C.ink}">The Massachusetts budget, in plain sight.</text>
-  <text x="74" y="262" font-family="Inter" font-weight="500" font-size="22" fill="${C.ink2}">Where state money comes from, and where it goes  ·  openledgerma.org</text>
+  <text x="156" y="128" font-family="Source Serif 4" font-weight="600" font-size="70" letter-spacing="-0.7" fill="${C.ink}">Open Ledger <tspan fill="${C.clay}">MA</tspan></text>
+  <text x="74" y="214" font-family="Source Serif 4" font-weight="500" font-size="46" letter-spacing="-0.46" fill="${C.ink}">The Massachusetts budget, in plain sight.</text>
+  <text x="74" y="262" font-family="Helvetica Neue, Helvetica, Arial" font-weight="400" font-size="23" fill="${C.ink2}">Where state money comes from, and where it goes  ·  openledgerma.org</text>
   <line x1="72" x2="1128" y1="292" y2="292" stroke="${C.rule}" stroke-width="2"/>
   <g style="mix-blend-mode:multiply">${paths}</g>
   ${nodes}
   <line x1="72" x2="1128" y1="596" y2="596" stroke="${C.rule}" stroke-width="2"/>
 </svg>`;
 
-// resvg needs TTF/OTF; decompress the self-hosted woff2 files to a temp dir.
+// resvg needs TTF/OTF; decompress the static Source Serif 4 woff2 files (dev dependency) to a temp dir.
 const tmp = mkdtempSync(path.join(tmpdir(), 'og-fonts-'));
 const fontFiles = [];
 for (const f of [
-  '@fontsource/fraunces/files/fraunces-latin-600-normal.woff2',
-  '@fontsource/fraunces/files/fraunces-latin-500-normal.woff2',
-  '@fontsource/inter/files/inter-latin-500-normal.woff2',
+  '@fontsource/source-serif-4/files/source-serif-4-latin-600-normal.woff2',
+  '@fontsource/source-serif-4/files/source-serif-4-latin-500-normal.woff2',
 ]) {
   const ttf = await wawoff2.decompress(readFileSync(path.join(root, 'node_modules', f)));
   const out = path.join(tmp, path.basename(f).replace('.woff2', '.ttf'));
@@ -95,7 +94,8 @@ for (const f of [
 }
 const png = new Resvg(svg, {
   fitTo: { mode: 'width', value: W },
-  font: { fontFiles, loadSystemFonts: false, defaultFontFamily: 'Inter' },
+  // The small line uses the system sans (Helvetica/Arial), like the site's body text.
+  font: { fontFiles, loadSystemFonts: true, defaultFontFamily: 'Helvetica' },
 }).render().asPng();
 rmSync(tmp, { recursive: true, force: true });
 writeFileSync(path.join(root, 'public/og.png'), png);

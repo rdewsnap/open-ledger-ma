@@ -28,16 +28,16 @@ export default function MethodologyPage() {
   return (
     <section className="py-8 md:py-12">
       <p className="eyebrow">Methodology</p>
-      <h1 className="mt-2 text-[2rem] md:text-[2.6rem]">Where every number comes from</h1>
-      <p className="mt-3 max-w-[60ch] text-ink-2">{dek}</p>
+      <h1 className="mt-2">Where every number comes from</h1>
+      <p className="mt-4 max-w-[62ch] text-ink-2">{dek}</p>
       <div className="mt-8 grid gap-10 lg:grid-cols-[13rem_minmax(0,1fr)]">
         <nav aria-label="On this page" className="hidden lg:block">
           <div className="sticky top-6">
-            <p className="eyebrow">On this page</p>
+            <p className="colhead">On this page</p>
             <ol className="mt-3 space-y-2 border-l border-rule pl-3 text-[0.85rem] leading-snug">
               {toc.map((t) => (
                 <li key={t.id}>
-                  <a href={`#${t.id}`} className="text-ink-2 hover:text-clay">
+                  <a href={`#${t.id}`} className="text-ink-2 no-underline hover:text-clay-text hover:underline">
                     {t.title}
                   </a>
                 </li>

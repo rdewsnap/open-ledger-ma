@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   filterRows,
-  highlightFromOverlay,
   isHighlighted,
   maxAbsDelta,
   nodeIdsOf,
@@ -11,8 +10,8 @@ import {
   statusOf,
   summarize,
   toChangeRows,
-  type DiffRow,
 } from './diff';
+import type { DiffRow } from './types';
 
 const row = (id: string, name: string, path: string, a: number, b: number, extra: Partial<DiffRow> = {}): DiffRow => ({
   id,
@@ -33,8 +32,8 @@ const RAW: DiffRow[] = [
   row('prog:40000500', 'MassHealth managed care', 'Health & Human Services › EOHHS & MassHealth', 100, 150, { code: '40000500' }),
   row('prog:15962450', 'Student Opportunity Act', 'Education › Elementary & Secondary Education', 0, 40),
   row('prog:15992625', 'Family shelter reserve', 'Administration & Finance › Executive Office for Administration & Finance', 80, 0),
-  row('prog:28100100', 'State parks operations', 'Energy & Environmental Affairs › Conservation & Recreation', 50, 45, { conservation: true }),
-  row('prog:other:EEA/DFG', 'Other Fisheries & Wildlife', 'Energy & Environmental Affairs › Fisheries & Wildlife', 10, 12, { conservation: true }),
+  row('prog:28100100', 'State parks operations', 'Energy & Environmental Affairs › State Parks & Recreation', 50, 45, { secId: 'sec:EEA', deptId: 'dept:EEA/DCR' }),
+  row('prog:other:EEA/DFG', 'Other Fisheries & Wildlife', 'Energy & Environmental Affairs › Fisheries & Wildlife', 10, 12),
   row('prog:99999999', 'Zeroed line', 'Statewide obligations › Pensions', 0, 0),
 ];
 
@@ -60,7 +59,7 @@ describe('toChangeRows', () => {
     expect(by['prog:other:EEA/DFG']!.account).toBeNull();
     expect(by['prog:15962450']!.account).toBe('15962450');
     expect(by['prog:28100100']!.sec).toBe('Energy & Environmental Affairs');
-    expect(by['prog:28100100']!.dept).toBe('Conservation & Recreation');
+    expect(by['prog:28100100']!.dept).toBe('State Parks & Recreation');
   });
 });
 
@@ -75,18 +74,22 @@ describe('statusOf', () => {
 });
 
 describe('highlight', () => {
-  it('derives node ids from bucket ids', () => {
-    expect(nodeIdsOf('prog:40000500')).toEqual(['prog:40000500']);
-    expect(nodeIdsOf('prog:other:EEA/DFG')).toEqual(['prog:other:EEA/DFG', 'sec:EEA', 'dept:EEA/DFG']);
+  it('takes node ids from secId/deptId, else from bucket ids', () => {
+    expect(nodeIdsOf({ id: 'prog:40000500' })).toEqual(['prog:40000500']);
+    expect(nodeIdsOf({ id: 'prog:28100100', secId: 'sec:EEA', deptId: 'dept:EEA/DCR' })).toEqual(['prog:28100100', 'sec:EEA', 'dept:EEA/DCR']);
+    expect(nodeIdsOf({ id: 'prog:other:EEA/DFG' })).toEqual(['prog:other:EEA/DFG', 'sec:EEA', 'dept:EEA/DFG']);
   });
   it('matches on any node id, never on an empty set', () => {
     expect(isHighlighted(['prog:other:EEA/DFG', 'sec:EEA', 'dept:EEA/DFG'], new Set(['sec:EEA']))).toBe(true);
     expect(isHighlighted(['prog:1'], new Set(['dept:EEA/DCR']))).toBe(false);
     expect(isHighlighted(['prog:1'], new Set())).toBe(false);
   });
-  it('derives the set from the overlay flag', () => {
-    expect([...highlightFromOverlay(RAW, true)]).toEqual(['prog:28100100', 'prog:other:EEA/DFG']);
-    expect(highlightFromOverlay(RAW, false).size).toBe(0);
+  it('matches a row by its secretariat, department or own id', () => {
+    const hl = (ids: string[]) => toChangeRows(RAW, 'enacted', new Set(ids)).filter((r) => r.highlighted).map((r) => r.id);
+    expect(hl(['sec:EEA'])).toEqual(['prog:28100100', 'prog:other:EEA/DFG']);
+    expect(hl(['dept:EEA/DCR'])).toEqual(['prog:28100100']);
+    expect(hl(['prog:40000500'])).toEqual(['prog:40000500']);
+    expect(hl([])).toEqual([]);
   });
   it('marks rows from a sec/dept id set', () => {
     const rows = toChangeRows(RAW, 'enacted', new Set(['dept:EEA/DFG']));
@@ -95,7 +98,7 @@ describe('highlight', () => {
 });
 
 describe('filterRows', () => {
-  const rows = toChangeRows(RAW, 'enacted', highlightFromOverlay(RAW, true));
+  const rows = toChangeRows(RAW, 'enacted', new Set(['sec:EEA']));
   const ids = (q: string, cons = false) => filterRows(rows, q, cons).map((r) => r.id);
   it('returns everything for an empty query', () => {
     expect(ids('')).toHaveLength(5);

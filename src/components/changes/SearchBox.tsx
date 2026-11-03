@@ -57,7 +57,7 @@ export function SearchBox({ onChange, shown, total, delay = 160 }: Props) {
           spellCheck={false}
           className="w-full rounded-[6px] border border-rule bg-paper py-1.5 pr-9 pl-8 text-[0.9rem] text-ink placeholder:text-ink-2/70 focus:border-clay focus:outline-none"
         />
-        <kbd aria-hidden="true" className="num pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded border border-rule px-1 text-[0.68rem] text-ink-2 sm:block">
+        <kbd aria-hidden="true" className="code pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded border border-rule px-1 text-[0.68rem] text-ink-2 sm:block">
           /
         </kbd>
       </label>

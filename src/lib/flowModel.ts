@@ -4,6 +4,7 @@
  * Pure (no DOM) so it can be unit tested.
  */
 import { scaleLinear } from 'd3-scale';
+import { ancestorIndex, inHighlight, NO_HIGHLIGHT, secOf, type HighlightSet } from './highlight';
 import type { FlowNodeKind, Flows, Measure, TreeNode } from './types';
 
 export const COLORS = {
@@ -27,7 +28,8 @@ export type ModelNode = {
   kind: FlowNodeKind;
   /** Dollar amount from the data file (not the drawn height). */
   amount: number;
-  conservation: boolean;
+  /** In the reader's highlight set (itself, its department or its secretariat). */
+  highlighted: boolean;
   /** Secretariat id for program nodes. */
   parent?: string;
   /** Department name, when the program came from tree.json. */
@@ -44,7 +46,8 @@ export type ModelLink = {
   target: string;
   value: number;
   proportional: boolean;
-  conservation: boolean;
+  /** Ends at a highlighted node. */
+  highlighted: boolean;
   color: string;
 };
 
@@ -69,30 +72,29 @@ export type ModelOptions = {
   minOtherShare?: number;
   /** Secretariats smaller than this share of spending fold into "Smaller offices". */
   minSecShare?: number;
-  /** Keep conservation secretariats' "Other" bucket visible however small (overlay on). */
-  keepConservation?: boolean;
-  /** tree.json for the year: gives full program detail for focus + phone lists. */
+  /** Highlighted secretariat/department ids (see lib/highlight.ts). */
+  highlight?: HighlightSet;
+  /** tree.json for the year: gives full program detail for focus + phone lists, and departments for the highlight. */
   tree?: TreeNode | null;
   measure?: Measure;
   /** Revenue ids in display order (meta.revenueGroups). Default: by value. */
   revenueOrder?: string[];
 };
 
-type Leaf = { id: string; name: string; amount: number; conservation: boolean; dept?: string; other: boolean };
+type Leaf = { id: string; name: string; amount: number; dept?: string; other: boolean };
 
-/** All program-level leaves under a tree node, with inherited conservation flags. */
+/** All program-level leaves under a tree node, with their department name. */
 export function treeLeaves(node: TreeNode, measure: Measure): Leaf[] {
   const out: Leaf[] = [];
-  const walk = (n: TreeNode, cons: boolean, dept?: string) => {
-    const c = cons || Boolean(n.conservation);
+  const walk = (n: TreeNode, dept?: string) => {
     if (!n.children?.length) {
-      out.push({ id: n.id, name: n.name, amount: n[measure], conservation: c, dept, other: Boolean(n.other) || isOtherId(n.id) });
+      out.push({ id: n.id, name: n.name, amount: n[measure], dept, other: Boolean(n.other) || isOtherId(n.id) });
       return;
     }
     const d = n.id.startsWith('dept:') ? n.name : dept;
-    for (const k of n.children) walk(k, c, d);
+    for (const k of n.children) walk(k, d);
   };
-  walk(node, false);
+  walk(node);
   return out.filter((l) => l.amount > 0);
 }
 
@@ -100,7 +102,8 @@ const ALL_OTHER = 'prog:__all-other';
 export const SMALL_SECS = 'sec:__small';
 
 const revenueRamp = scaleLinear<string>().domain([0, 1]).range([COLORS.slate, '#BCC5CD']);
-const warmRamp = scaleLinear<string>()
+/** Spending ramp shared by Flow and Scale: clay through sand. */
+export const warmRamp = scaleLinear<string>()
   .domain([0, 0.34, 0.67, 1])
   .range([COLORS.clay, COLORS.sand1, COLORS.sand2, COLORS.sand3]);
 
@@ -109,8 +112,16 @@ export function isOtherId(id: string): boolean {
 }
 
 export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel {
-  const { focus = null, topPrograms = 16, focusPrograms = 14, minOtherShare = 0.012, minSecShare = 0.005, keepConservation = false, tree = null, measure = flows.measure, revenueOrder } = opts;
-  flows = foldSmallSecretariats(flows, minSecShare);
+  const { focus = null, topPrograms = 16, focusPrograms = 14, minOtherShare = 0.012, minSecShare = 0.005, highlight = NO_HIGHLIGHT, tree = null, measure = flows.measure, revenueOrder } = opts;
+  // Secretariats touched by the highlight (selected, or holding a selected department).
+  const hlSecs = new Set([...highlight].map(secOf).filter((x): x is string => Boolean(x)));
+  flows = foldSmallSecretariats(flows, minSecShare, (id) => hlSecs.has(id));
+  const ancestors = ancestorIndex(tree);
+  /** Program ids from flows.json fall back to their parent secretariat; folded offices map to theirs. */
+  const isHl = (id: string, parent?: string) => {
+    const office = id.match(/^prog:office:(.+)$/);
+    return inHighlight(office ? `sec:${office[1]}` : id, highlight, ancestors, parent);
+  };
 
   const byId = new Map(flows.nodes.map((n) => [n.id, n]));
   const kindOf = (id: string) => byId.get(id)?.kind;
@@ -151,7 +162,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
     name: n.name,
     kind: 'revenue',
     amount: n.value,
-    conservation: Boolean(n.conservation),
+    highlighted: false,
     bucket: false,
     color: revenueRamp(revenueRaw.length > 1 ? i / (revenueRaw.length - 1) : 0),
     order: order++,
@@ -161,7 +172,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
     name: n.name,
     kind: 'secretariat',
     amount: n.value,
-    conservation: Boolean(n.conservation),
+    highlighted: isHl(n.id),
     bucket: false,
     color: secColor.get(n.id) ?? COLORS.sand2,
     order: order++,
@@ -176,7 +187,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
       name: raw?.name ?? id,
       kind: 'program',
       amount,
-      conservation: Boolean(raw?.conservation ?? (parent && byId.get(parent)?.conservation)),
+      highlighted: isHl(id, parent),
       parent,
       bucket: isOtherId(id),
       color: (parent && secColor.get(parent)) ?? COLORS.sand3,
@@ -198,7 +209,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
     name: l.name,
     kind: 'program',
     amount: l.amount,
-    conservation: l.conservation,
+    highlighted: isHl(l.id, secId),
     parent: secId,
     dept: l.dept,
     bucket: l.other,
@@ -231,13 +242,14 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
     const rest = list.filter((p) => !keepIds.has(p.id)).reduce((a, p) => a + p.amount, 0);
     for (const p of keep) drawn.set(p.id, { ...p, amount: 0 });
     const sec = secById.get(focus);
-    const addLink = (target: string, value: number, conservation: boolean) =>
-      linkAgg.set(`${focus}→${target}`, { source: focus, target, value, proportional: false, conservation, color: sec?.color ?? COLORS.sand2 });
-    for (const p of keep) addLink(p.id, p.amount, p.conservation);
+    const addLink = (target: string, value: number, highlighted: boolean) =>
+      linkAgg.set(`${focus}→${target}`, { source: focus, target, value, proportional: false, highlighted, color: sec?.color ?? COLORS.sand2 });
+    for (const p of keep) addLink(p.id, p.amount, p.highlighted);
     if (rest > 0) {
       const oid = otherIdFor(focus);
-      drawn.set(oid, { id: oid, name: otherName(focus), kind: 'program', amount: 0, conservation: Boolean(sec?.conservation), parent: focus, bucket: true, color: sec?.color ?? COLORS.sand3, order: 0 });
-      addLink(oid, rest, Boolean(sec?.conservation));
+      const hl = Boolean(sec?.highlighted);
+      drawn.set(oid, { id: oid, name: otherName(focus), kind: 'program', amount: 0, highlighted: hl, parent: focus, bucket: true, color: sec?.color ?? COLORS.sand3, order: 0 });
+      addLink(oid, rest, hl);
     }
   } else if (focus) {
     const list = (fullPrograms.get(focus) ?? []).filter((p) => !p.bucket);
@@ -269,7 +281,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
       const parent = parentOf.get(p.id);
       if (!parent || keep.has(p.id)) continue;
       const share = (otherTotals.get(parent) ?? 0) / (flows.spendingTotal || 1);
-      const keepOwn = share >= minOtherShare || (keepConservation && Boolean(byId.get(parent)?.conservation));
+      const keepOwn = share >= minOtherShare || hlSecs.has(parent);
       remap.set(p.id, keepOwn ? otherIdFor(parent) : ALL_OTHER);
     }
     for (const id of keep) drawn.set(id, toProgNode(id, 0));
@@ -288,7 +300,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
         target: l.target,
         value: l.value,
         proportional: Boolean(l.proportional),
-        conservation: Boolean(tgt?.conservation),
+        highlighted: Boolean(tgt?.highlighted),
         color: src?.color ?? COLORS.slate,
       });
       continue;
@@ -303,7 +315,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
           name: isAll ? 'All other programs' : otherName(l.source),
           kind: 'program',
           amount: 0,
-          conservation: isAll ? false : Boolean(secById.get(l.source)?.conservation),
+          highlighted: isAll ? false : Boolean(secById.get(l.source)?.highlighted),
           parent: isAll ? undefined : l.source,
           bucket: true,
           color: isAll ? COLORS.rule : (secColor.get(l.source) ?? COLORS.sand3),
@@ -321,7 +333,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
           target,
           value: l.value,
           proportional: Boolean(l.proportional),
-          conservation: Boolean(tgtNode?.conservation ?? sec?.conservation),
+          highlighted: Boolean(tgtNode?.highlighted ?? sec?.highlighted),
           color: sec?.color ?? COLORS.sand2,
         });
       }
@@ -358,14 +370,14 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
 
 /**
  * Many secretariats are a rounding error next to Health & Human Services. Fold the
- * ones under `minShare` of spending (never conservation lines) into one
- * "Smaller offices" secretariat whose "programs" are those offices, so it can be
- * expanded like any other.
+ * ones under `minShare` of spending into one "Smaller offices" secretariat whose
+ * "programs" are those offices, so it can be expanded like any other. Secretariats
+ * for which `keep` returns true (the reader highlighted them) stay on their own.
  */
-export function foldSmallSecretariats(flows: Flows, minShare: number): Flows {
+export function foldSmallSecretariats(flows: Flows, minShare: number, keep: (secId: string) => boolean = () => false): Flows {
   const total = flows.spendingTotal || 1;
   const small = flows.nodes.filter(
-    (n) => n.kind === 'secretariat' && !n.conservation && n.value / total < minShare,
+    (n) => n.kind === 'secretariat' && !keep(n.id) && n.value / total < minShare,
   );
   if (small.length < 2) return flows;
   const smallIds = new Set(small.map((n) => n.id));

@@ -8,8 +8,6 @@ type N = SankeyNode<ModelNode, ModelLink>;
 type L = SankeyLink<ModelNode, ModelLink>;
 
 const COLUMN: Record<ModelNode['kind'], number> = { revenue: 0, secretariat: 1, program: 2 };
-const LEAF_PATH =
-  'M13.5 2.5C7 2.5 3 5.5 3 10c0 1.4.5 2.5 1.2 3.3C5.8 9.5 8.3 7.6 11 6.6 8.7 8 6.6 10.2 5.3 13.9c.7.4 1.6.6 2.5.6 4.3 0 5.7-4.8 5.7-12Z';
 
 /** Filled ribbon from band [a0,a1] at x0 to band [b0,b1] at x1 (ends may differ in width). */
 function ribbon(x0: number, a0: number, a1: number, x1: number, b0: number, b1: number) {
@@ -22,7 +20,8 @@ const touches = (l: L, id: string) => (l.source as N).id === id || (l.target as 
 type Props = {
   model: FlowModel;
   width: number;
-  overlay: boolean;
+  /** A highlight set is active: highlighted nodes turn moss, the rest step back to 45%. */
+  highlighting: boolean;
   focus: string | null;
   onFocus: (id: string | null) => void;
   spendWord: string; // "spending" / "enacted spending"
@@ -34,7 +33,7 @@ function truncate(s: string, px: number, charPx: number) {
   return s.length <= max ? s : `${s.slice(0, max - 1).trimEnd()}…`;
 }
 
-export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, label }: Props) {
+export function SankeyChart({ model, width, highlighting, focus, onFocus, spendWord, label }: Props) {
   const [hover, setHover] = useState<{ kind: 'node' | 'link'; id: string } | null>(null);
   const [tip, setTip] = useState<{ data: TipData; x: number; y: number } | null>(null);
   const [kbFocus, setKbFocus] = useState<string | null>(null);
@@ -135,7 +134,7 @@ export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, 
       part: n.amount,
       whole: isRev ? model.revenueTotal : model.spendingTotal,
       wholeLabel: isRev ? 'revenue collected' : `total ${spendWord}`,
-      conservation: n.conservation,
+      highlighted: highlighting && n.highlighted,
       hint: isRev
         ? 'Its ribbons split spending in proportion to this share of revenue.'
         : n.kind === 'secretariat'
@@ -153,7 +152,7 @@ export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, 
     whole: model.spendingTotal,
     wholeLabel: `total ${spendWord}`,
     proportional: l.proportional,
-    conservation: l.conservation,
+    highlighted: highlighting && l.highlighted,
   });
 
   const localPoint = (e: MouseEvent) => {
@@ -173,13 +172,13 @@ export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, 
   const linkStyle = (l: L): { stroke: string; opacity: number } => {
     let stroke = l.color;
     let opacity = 0.35;
-    if (overlay) {
-      if (l.conservation) stroke = COLORS.moss;
+    if (highlighting) {
+      if (l.highlighted) stroke = COLORS.moss;
       else opacity *= 0.45;
     }
     if (focus) {
       if (touches(l, focus)) {
-        stroke = overlay && l.conservation ? COLORS.moss : COLORS.clay;
+        stroke = highlighting && l.highlighted ? COLORS.moss : COLORS.clay;
         opacity = 0.5;
       } else opacity = 0.06;
     }
@@ -194,12 +193,12 @@ export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, 
   const nodeStyle = (n: N): { fill: string; opacity: number } => {
     let fill = n.color;
     let opacity = 1;
-    if (overlay) {
-      if (n.conservation) fill = COLORS.moss;
+    if (highlighting && n.kind !== 'revenue') {
+      if (n.highlighted) fill = COLORS.moss;
       else opacity = 0.45;
     }
     if (focus) {
-      if (n.id === focus) fill = overlay && n.conservation ? COLORS.moss : COLORS.clay;
+      if (n.id === focus) fill = highlighting && n.highlighted ? COLORS.moss : COLORS.clay;
       else if (n.kind === 'secretariat') opacity = Math.min(opacity, 0.35);
     }
     return { fill, opacity };
@@ -207,7 +206,7 @@ export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, 
 
   const labelOpacity = (n: N) => {
     let o = 1;
-    if (overlay && !n.conservation) o = 0.55;
+    if (highlighting && n.kind !== 'revenue' && !n.highlighted) o = 0.55;
     if (focusSet && !focusSet.has(n.id)) o = Math.min(o, 0.4);
     return o;
   };
@@ -242,11 +241,11 @@ export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, 
         <rect x={0} y={0} width={width} height={layout.height} fill="transparent" onClick={() => focus && onFocus(null)} />
 
         {/* Column heads */}
-        <g className="eyebrow" style={{ fontSize: 10.5, letterSpacing: '0.09em', fontWeight: 600 }} fill={COLORS.ink2}>
-          <text x={revenueX1} y={14} textAnchor="end">REVENUE</text>
-          <text x={secX0} y={14}>SECRETARIATS</text>
+        <g style={{ fontSize: 13, fontWeight: 600 }} fill={COLORS.ink2}>
+          <text x={revenueX1} y={14} textAnchor="end">Revenue</text>
+          <text x={secX0} y={14}>Secretariats</text>
           <text x={progX0} y={14}>
-            {focusName && layout.zoom > 1 ? 'PROGRAMS · ENLARGED TO FIT' : 'PROGRAMS'}
+            {focusName && layout.zoom > 1 ? 'Programs · enlarged to fit' : 'Programs'}
           </text>
         </g>
         <line x1={0} x2={width} y1={top - 12} y2={top - 12} stroke={COLORS.rule} strokeWidth={1} />
@@ -299,15 +298,15 @@ export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, 
             const lx = isRev ? x0 - 8 : x1 + 8;
             const anchor = isRev ? 'end' : 'start';
             const room = isRev ? labelL - 14 : n.kind === 'program' ? labelR - 18 : midGap;
-            const leafW = overlay && n.conservation ? 14 : 0;
+            const dotW = highlighting && n.highlighted ? 12 : 0;
             const amount = formatMoney(n.amount);
             const space = layout.room.get(n.id) ?? 0;
             const twoLine = h >= 22 && space >= 32;
             const oneLine = !twoLine && space >= 12.5;
-            const name = truncate(n.name, room - leafW - (twoLine ? 0 : amount.length * 7 + 8), narrow ? 6.6 : 7);
-            const nodeLabel = `${n.name}, ${amount}, ${formatShare(n.amount, isRev ? model.revenueTotal : model.spendingTotal)} of ${isRev ? 'revenue collected' : `total ${spendWord}`}${n.conservation ? ', conservation line' : ''}`;
-            const leafX = isRev ? lx - 11 : lx;
-            const textX = isRev ? lx - leafW : lx + leafW;
+            const name = truncate(n.name, room - dotW - (twoLine ? 0 : amount.length * 7 + 8), narrow ? 6.8 : 7.2);
+            const nodeLabel = `${n.name}, ${amount}, ${formatShare(n.amount, isRev ? model.revenueTotal : model.spendingTotal)} of ${isRev ? 'revenue collected' : `total ${spendWord}`}${highlighting && n.highlighted ? ', highlighted' : ''}`;
+            const dotX = isRev ? lx - 4 : lx + 4;
+            const textX = isRev ? lx - dotW : lx + dotW;
             return (
               <g
                 key={n.id}
@@ -343,29 +342,27 @@ export function SankeyChart({ model, width, overlay, focus, onFocus, spendWord, 
                 ) : null}
                 {twoLine || oneLine ? (
                   <g opacity={labelOpacity(n)} style={{ transition: "opacity 240ms ease-out" }}>
-                    {leafW ? (
-                      <path d={LEAF_PATH} transform={`translate(${leafX} ${cy - (twoLine ? 13 : 6)}) scale(0.72)`} fill={COLORS.moss} />
-                    ) : null}
+                    {dotW ? <circle cx={dotX} cy={twoLine ? cy - 7.5 : cy} r={4} fill={COLORS.moss} stroke={COLORS.paper} strokeWidth={1.5} /> : null}
                     {twoLine ? (
                       <>
-                        <text x={textX} y={cy - 3} textAnchor={anchor} className="svg-label" fill={COLORS.ink} style={{ fontSize: narrow ? 12.5 : 13.5, fontWeight: isSec && focus === n.id ? 650 : 520 }}>
+                        <text x={textX} y={cy - 3} textAnchor={anchor} className="svg-label" fill={COLORS.ink} style={{ fontSize: narrow ? 13 : 14, fontWeight: isSec && focus === n.id ? 650 : 500 }}>
                           {name}
                         </text>
-                        <text x={textX} y={cy + 12} textAnchor={anchor} className="svg-label num" fill={COLORS.ink2} style={{ fontSize: 11.5 }}>
+                        <text x={textX} y={cy + 12} textAnchor={anchor} className="svg-label num" fill={COLORS.ink2} style={{ fontSize: 12.5 }}>
                           {amount}
                         </text>
                       </>
                     ) : (
-                      <text x={textX} y={cy + 4} textAnchor={anchor} className="svg-label" fill={COLORS.ink} style={{ fontSize: narrow ? 11.5 : 12, fontWeight: 480 }}>
+                      <text x={textX} y={cy + 4} textAnchor={anchor} className="svg-label" fill={COLORS.ink} style={{ fontSize: narrow ? 12 : 13, fontWeight: 450 }}>
                         {isRev ? (
                           <>
-                            <tspan className="num" fill={COLORS.ink2} style={{ fontSize: 10.5 }}>{amount}</tspan>
+                            <tspan className="num" fill={COLORS.ink2} style={{ fontSize: 11.5 }}>{amount}</tspan>
                             <tspan dx={6}>{name}</tspan>
                           </>
                         ) : (
                           <>
                             {name}
-                            <tspan dx={6} className="num" fill={COLORS.ink2} style={{ fontSize: 10.5 }}>{amount}</tspan>
+                            <tspan dx={6} className="num" fill={COLORS.ink2} style={{ fontSize: 11.5 }}>{amount}</tspan>
                           </>
                         )}
                       </text>

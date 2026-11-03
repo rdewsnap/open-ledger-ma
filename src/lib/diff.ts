@@ -1,49 +1,10 @@
-import { DataMissingError } from './data';
-import type { Measure, SourceInfo } from './types';
+import type { DiffRow, Measure, SourceInfo } from './types';
 
 /**
  * Year-over-year program changes, from data/diff/fy{A}_fy{B}.json
- * (docs/DATA_CONTRACT.md "Files" and "Changes" item 8).
+ * (docs/DATA_CONTRACT.md "Files" and "Changes" item 8). Types live in types.ts
+ * and the loader (`loadDiff`) in data.ts, which share the fetch cache.
  */
-
-export type DiffRow = {
-  id: string;
-  name: string;
-  /** "Secretariat › Department" */
-  path: string;
-  code?: string;
-  enactedA: number;
-  enactedB: number;
-  actualA: number;
-  actualB: number;
-  dEnacted: number;
-  dActual: number;
-  /** Percent units (1.9 = 1.9%); null when the A value is 0. */
-  pctEnacted: number | null;
-  pctActual: number | null;
-  conservation?: true;
-};
-
-export type DiffFile = { a: number; b: number; rows: DiffRow[] };
-
-export const diffUrl = (a: number, b: number) => `/data/diff/fy${a}_fy${b}.json`;
-
-const cache = new Map<string, Promise<DiffFile>>();
-
-export function loadDiff(a: number, b: number): Promise<DiffFile> {
-  const url = diffUrl(a, b);
-  const hit = cache.get(url);
-  if (hit) return hit;
-  const p = fetch(url, { headers: { Accept: 'application/json' } }).then(async (res) => {
-    const type = res.headers.get('content-type') ?? '';
-    // A static host may answer a missing file with the SPA's index.html.
-    if (!res.ok || type.includes('text/html')) throw new DataMissingError(url);
-    return (await res.json()) as DiffFile;
-  });
-  p.catch(() => cache.delete(url));
-  cache.set(url, p);
-  return p;
-}
 
 /**
  * A valid (from, to) pair for the loaded years, from < to.
@@ -118,28 +79,23 @@ const ACCOUNT_ID = /^prog:(\d{6,})$/;
 const BUCKET_ID = /^prog:other:([^/]+)(?:\/(.+))?$/;
 
 /**
- * Node ids a row belongs to. Diff rows carry no secretariat/department ids, so
- * only "Other" buckets (prog:other:{SEC}/{DEPT}) yield them; named programs
- * match by their own id.
+ * Node ids a row belongs to: its own id plus its secretariat and department
+ * (from the row's secId/deptId, or parsed from an "Other" bucket id
+ * prog:other:{SEC}/{DEPT} when a file predates those fields).
  */
-export function nodeIdsOf(id: string): string[] {
-  const m = id.match(BUCKET_ID);
-  if (!m) return [id];
-  const [, sec, dept] = m;
-  return dept ? [id, `sec:${sec}`, `dept:${sec}/${dept}`] : [id, `sec:${sec}`];
+export function nodeIdsOf(row: Pick<DiffRow, 'id' | 'secId' | 'deptId'>): string[] {
+  const out = [row.id];
+  const m = row.id.match(BUCKET_ID);
+  const sec = row.secId ?? (m ? `sec:${m[1]}` : undefined);
+  const dept = row.deptId ?? (m && m[2] ? `dept:${m[1]}/${m[2]}` : undefined);
+  if (sec) out.push(sec);
+  if (dept) out.push(dept);
+  return out;
 }
 
-/** A row is highlighted when any of its node ids is in the set. */
+/** A row is highlighted when its id, secretariat or department is in the set. */
 export function isHighlighted(nodeIds: readonly string[], highlight: ReadonlySet<string>): boolean {
   return highlight.size > 0 && nodeIds.some((id) => highlight.has(id));
-}
-
-/**
- * The one place that knows where highlights come from today: the overlay param
- * marks rows flagged in the data. Returns their ids (empty when off).
- */
-export function highlightFromOverlay(rows: DiffRow[], overlay: boolean): Set<string> {
-  return new Set(overlay ? rows.filter((r) => r.conservation).map((r) => r.id) : []);
 }
 
 /** Rows for one measure. Programs at $0 in both years drop out. */
@@ -151,7 +107,7 @@ export function toChangeRows(rows: DiffRow[], measure: Measure, highlight: Reado
     if (a === 0 && b === 0) continue;
     const [sec = '', dept = ''] = r.path.split(' › ');
     const bucket = isBucket(r.id);
-    const nodeIds = nodeIdsOf(r.id);
+    const nodeIds = nodeIdsOf(r);
     const account = bucket ? null : (r.code ?? r.id.match(ACCOUNT_ID)?.[1] ?? null);
     out.push({
       id: r.id,

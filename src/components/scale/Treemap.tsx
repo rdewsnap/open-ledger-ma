@@ -6,13 +6,14 @@ import {
   fitLabel,
   isHighlighted,
   layoutTreemap,
+  LABEL_LIGHT,
   textOn,
   type Cell,
   type HighlightSet,
   type LabelFit,
   type ScaleNode,
 } from '../../lib/treemap';
-import { HighlightDot } from './HighlightDot';
+import { HighlightDot } from '../HighlightDot';
 import { useMeasurer } from './measure';
 import { ScaleTooltip, type ScaleTip } from './ScaleTooltip';
 
@@ -280,7 +281,7 @@ export function Treemap({ focus, width, height, colors, highlight, total, totalL
 }
 
 function CellLabel({ fit, color, marker, header }: { fit: Exclude<LabelFit, { mode: 'none' }>; color: string; marker: boolean; header: boolean }) {
-  const onDark = color === COLORS.paper;
+  const onDark = color === LABEL_LIGHT;
   const dot = marker ? (
     <span className="mr-[5px] inline-flex align-[1px]">
       <HighlightDot onDark={onDark} />
@@ -294,13 +295,13 @@ function CellLabel({ fit, color, marker, header }: { fit: Exclude<LabelFit, { mo
             {dot}
             {fit.name}
           </div>
-          <div className="num text-[11px] leading-[14px] opacity-80">{fit.amount}</div>
+          <div className="num text-[11px] leading-[14px]">{fit.amount}</div>
         </>
       ) : (
         <div className="text-[11px] leading-[14px] font-medium" data-header={header || undefined}>
           {dot}
           {fit.name}
-          {fit.amount ? <span className="num ml-[6px] font-normal opacity-80">{fit.amount}</span> : null}
+          {fit.amount ? <span className="num ml-[6px] font-normal">{fit.amount}</span> : null}
         </div>
       )}
     </div>

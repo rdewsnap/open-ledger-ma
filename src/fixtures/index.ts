@@ -12,8 +12,7 @@ type Sec = {
   key: string;
   name: string;
   enacted: number;
-  conservation?: true;
-  programs: { code: string; name: string; dept: string; share: number; conservation?: true }[];
+  programs: { code: string; name: string; dept: string; share: number }[];
 };
 
 // Enacted amounts. Programs list a share of their secretariat; the rest is "Other".
@@ -92,12 +91,11 @@ const SECS: Sec[] = [
     key: 'EEA',
     name: 'Energy & Environmental Affairs',
     enacted: 0.78 * B,
-    conservation: true,
     programs: [
-      { code: '28100100', name: 'State parks and recreation', dept: 'Conservation & Recreation', share: 0.14, conservation: true },
-      { code: '23100200', name: 'Fisheries and wildlife', dept: 'Fisheries & Wildlife', share: 0.05, conservation: true },
-      { code: '22000100', name: 'Environmental protection', dept: 'Environmental Protection', share: 0.06, conservation: true },
-      { code: '25110100', name: 'Agricultural resources', dept: 'Agricultural Resources', share: 0.04, conservation: true },
+      { code: '28100100', name: 'State parks and recreation', dept: 'Parks & Recreation', share: 0.14 },
+      { code: '23100200', name: 'Fisheries and wildlife', dept: 'Fisheries & Wildlife', share: 0.05 },
+      { code: '22000100', name: 'Environmental protection', dept: 'Environmental Protection', share: 0.06 },
+      { code: '25110100', name: 'Agricultural resources', dept: 'Agricultural Resources', share: 0.04 },
     ],
   },
 ];
@@ -137,7 +135,7 @@ function buildFlows(measure: Measure): Flows {
   SECS.forEach((s, i) => {
     const secId = `sec:${s.key}`;
     const secValue = secValues[i] ?? 0;
-    nodes.push({ id: secId, name: s.name, kind: 'secretariat', value: round(secValue), ...(s.conservation ? { conservation: true } : {}) });
+    nodes.push({ id: secId, name: s.name, kind: 'secretariat', value: round(secValue) });
     for (const [rid, , rv] of REVENUE) {
       links.push({ source: rid, target: secId, value: round(secValue * ((rv * revScale) / revTotal)), proportional: true });
     }
@@ -146,12 +144,12 @@ function buildFlows(measure: Measure): Flows {
       const v = secValue * p.share;
       used += v;
       const id = `prog:${p.code}`;
-      nodes.push({ id, name: p.name, kind: 'program', value: round(v), parent: secId, ...(p.conservation ? { conservation: true } : {}) });
+      nodes.push({ id, name: p.name, kind: 'program', value: round(v), parent: secId });
       links.push({ source: secId, target: id, value: round(v) });
     }
     const rest = secValue - used;
     const oid = `prog:other:${s.key}`;
-    nodes.push({ id: oid, name: `Other ${s.name}`, kind: 'program', value: round(rest), parent: secId, ...(s.conservation ? { conservation: true } : {}) });
+    nodes.push({ id: oid, name: `Other ${s.name}`, kind: 'program', value: round(rest), parent: secId });
     links.push({ source: secId, target: oid, value: round(rest) });
   });
 
@@ -165,12 +163,12 @@ function buildTree(): TreeNode {
     for (const p of s.programs) {
       const enacted = s.enacted * p.share;
       used += enacted;
-      const dKey = `dept:${s.key}/${p.dept}`;
+      const dKey = `dept:${s.key}/${p.dept.replace(/[^A-Za-z0-9]/g, '')}`;
       const dept = depts.get(dKey) ?? { id: dKey, name: p.dept, enacted: 0, gaa: 0, actual: 0, children: [] };
       dept.enacted += enacted;
       dept.gaa += enacted * 0.97;
       dept.actual += enacted * SPENT_SO_FAR;
-      dept.children!.push({ id: `prog:${p.code}`, name: p.name, code: p.code, enacted, gaa: enacted * 0.97, actual: enacted * SPENT_SO_FAR, ...(p.conservation ? { conservation: true } : {}) });
+      dept.children!.push({ id: `prog:${p.code}`, name: p.name, code: p.code, enacted, gaa: enacted * 0.97, actual: enacted * SPENT_SO_FAR });
       depts.set(dKey, dept);
     }
     const rest = s.enacted - used;
@@ -181,7 +179,6 @@ function buildTree(): TreeNode {
       enacted: s.enacted,
       gaa: s.enacted * 0.97,
       actual: s.enacted * SPENT_SO_FAR,
-      ...(s.conservation ? { conservation: true as const } : {}),
       children: [...depts.values(), other],
     };
   });

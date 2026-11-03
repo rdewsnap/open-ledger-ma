@@ -21,8 +21,8 @@ export function TextPicker<T extends string | number>({ label, value, options, o
             aria-pressed={on}
             disabled={o.disabled}
             onClick={() => onPick(o.value)}
-            className={`text-[0.92rem] underline-offset-[5px] transition-colors duration-200 disabled:cursor-not-allowed disabled:text-ink-2/40 ${
-              on ? 'font-semibold text-ink underline decoration-clay decoration-2' : 'text-ink-2 hover:text-ink'
+            className={`text-[0.95rem] underline-offset-[6px] transition-colors duration-200 disabled:cursor-not-allowed disabled:text-ink-2/40 ${
+              on ? 'text-ink underline decoration-clay decoration-2' : 'text-ink-2 hover:text-ink'
             }`}
           >
             {o.label}

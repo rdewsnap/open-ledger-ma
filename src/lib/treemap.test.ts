@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildHierarchy,
-  highlightFromOverlay,
   highlightTotal,
   isHighlighted,
   decodeNodeParam,
@@ -37,8 +36,8 @@ const tree: TreeNode = {
       ],
     },
     {
-      ...leaf('sec:EEA', 0, { conservation: true }),
-      children: [{ ...leaf('dept:EEA/DCR', 0, { conservation: true }), children: [leaf('prog:2', 50, { conservation: true })] }],
+      ...leaf('sec:EEA', 0),
+      children: [{ ...leaf('dept:EEA/DCR', 0), children: [leaf('prog:2', 50)] }],
     },
   ],
 };
@@ -130,17 +129,11 @@ describe('hierarchy + layout', () => {
     expect(root.children?.[0]?.data.id).toBe('sec:EHS');
   });
 
-  it('derives the highlight set from the overlay flag', () => {
-    expect(highlightFromOverlay(tree, false).size).toBe(0);
-    expect([...highlightFromOverlay(tree, true)].sort()).toEqual(['dept:EEA/DCR', 'sec:EEA']);
-  });
-
   it('highlights descendants and totals highlighted subtrees once', () => {
-    const set = highlightFromOverlay(tree, true);
+    const set = new Set(['sec:EEA', 'dept:EEA/DCR']);
     expect(highlightTotal(root, set)).toBe(50);
     expect(isHighlighted(root.find((n) => n.data.id === 'prog:2')!, set)).toBe(true);
     expect(isHighlighted(root.find((n) => n.data.id === 'prog:50110100')!, set)).toBe(false);
-    // Any id works, not just flagged ones.
     const dmh = new Set(['dept:EHS/DMH']);
     expect(highlightTotal(root, dmh)).toBe(100);
     expect(isHighlighted(root.find((n) => n.data.id === 'prog:50110100')!, dmh)).toBe(true);
@@ -168,7 +161,9 @@ describe('hierarchy + layout', () => {
   it('tints toward paper and picks readable text', () => {
     expect(tint('#000000', 0)).toBe('#000000');
     expect(tint('#B5542D', 1)).toBe('#f7f3ea');
-    expect(textOn('#2B2824')).toBe('#F7F3EA');
-    expect(textOn('#E6D3B8')).toBe('#2B2824');
+    expect(textOn('#2B2824')).toBe('#FFFFFF');
+    expect(textOn('#B5542D')).toBe('#FFFFFF');
+    expect(textOn('#BB6B45')).toBe('#1A1714');
+    expect(textOn('#E6D3B8')).toBe('#1A1714');
   });
 });

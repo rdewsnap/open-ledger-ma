@@ -4,7 +4,7 @@ import { COLORS } from '../../lib/flowModel';
 import { formatMoney, formatShare } from '../../lib/format';
 import { cellFill, isHighlighted, type HighlightSet, type ScaleNode } from '../../lib/treemap';
 import { useMeta } from '../../state/meta';
-import { HighlightDot } from './HighlightDot';
+import { HighlightDot } from '../HighlightDot';
 
 type Props = {
   focus: ScaleNode;
@@ -45,10 +45,10 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
   return (
     <section aria-labelledby="scale-list" className="mt-8">
       <div className="flex items-baseline justify-between gap-4 border-b border-rule pb-2">
-        <h2 id="scale-list" className="text-[1.2rem]">
+        <h2 id="scale-list" className="text-[1.6rem]">
           {kids.length} {kindOf(firstId, kids.length)} in {focus.depth === 0 ? 'the budget' : focus.data.name}
         </h2>
-        <span className="eyebrow">{measureLabel}</span>
+        <span className="colhead">{measureLabel}</span>
       </div>
       <ul className="divide-y divide-rule border-b border-rule">
         {shown.map((c) => {
@@ -60,7 +60,7 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
           const accounts = (c.data as { accounts?: number }).accounts;
           const pct = max > 0 ? Math.max(0.6, (value / max) * 100) : 0;
           const name = (
-            <span className="flex min-w-0 items-center gap-1.5 text-[0.95rem] leading-snug text-ink">
+            <span className="flex min-w-0 items-center gap-1.5 text-[1rem] leading-snug text-ink">
               {markers && hl ? <HighlightDot title="Highlighted" /> : null}
               <span className={`truncate ${c.data.other ? 'text-ink-2' : ''}`}>{c.data.name}</span>
             </span>
@@ -75,9 +75,9 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
                     className="group min-w-0 text-left"
                     aria-label={`${c.data.name}, ${formatMoney(value)}. Zoom in.`}
                   >
-                    <span className="flex items-center gap-1 group-hover:[&_span.truncate]:text-clay">
+                    <span className="flex items-center gap-1 group-hover:[&_span.truncate]:text-clay-text">
                       {name}
-                      <svg viewBox="0 0 10 10" className="h-2.5 w-2.5 shrink-0 text-ink-2 group-hover:text-clay" aria-hidden="true">
+                      <svg viewBox="0 0 10 10" className="h-2.5 w-2.5 shrink-0 text-ink-2 group-hover:text-clay-text" aria-hidden="true">
                         <path d="M3.5 2 6.5 5 3.5 8" stroke="currentColor" fill="none" strokeWidth="1.4" strokeLinecap="round" />
                       </svg>
                     </span>
@@ -85,7 +85,7 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
                 ) : (
                   name
                 )}
-                <span className="num shrink-0 text-[0.92rem] text-ink">{formatMoney(value)}</span>
+                <span className="num shrink-0 text-[0.95rem] text-ink">{formatMoney(value)}</span>
               </div>
               <div className="mt-1.5 h-[5px] w-full rounded-full bg-paper-2" aria-hidden="true">
                 <div
@@ -93,26 +93,26 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
                   style={{ width: `${pct}%`, background: cellFill(base, Math.min(c.depth, 2)), opacity: anyHl && !hl ? 0.45 : 1 }}
                 />
               </div>
-              <p className="mt-1 text-[0.75rem] text-ink-2">
+              <p className="mt-1 text-[0.85rem] text-ink-2">
                 <span className="num">{formatShare(value, whole)}</span> of {focus.depth === 0 ? 'the total' : focus.data.name}
                 {zoomable ? (
                   <>
-                    <span aria-hidden="true" className="px-1.5 text-rule">·</span>
+                    <span aria-hidden="true" className="px-1.5 text-ink-2/60">·</span>
                     {c.children!.length} {kindOf(c.children![0]!.data.id, c.children!.length)}
                   </>
                 ) : null}
                 {accounts ? (
                   <>
-                    <span aria-hidden="true" className="px-1.5 text-rule">·</span>
+                    <span aria-hidden="true" className="px-1.5 text-ink-2/60">·</span>
                     {accounts} smaller line item{accounts === 1 ? '' : 's'}
                   </>
                 ) : null}
                 {acct ? (
                   <>
-                    <span aria-hidden="true" className="px-1.5 text-rule">·</span>
-                    <span className="num">{acct}</span>
-                    <span aria-hidden="true" className="px-1.5 text-rule">·</span>
-                    <a href={socrataRowsUrl(meta.sources.spending, year, acct)} aria-label={`Source rows for ${c.data.name}`}>
+                    <span aria-hidden="true" className="px-1.5 text-ink-2/60">·</span>
+                    <span className="code">{acct}</span>
+                    <span aria-hidden="true" className="px-1.5 text-ink-2/60">·</span>
+                    <a href={socrataRowsUrl(meta.sources.spending, year, acct)} aria-label={`rows for ${c.data.name}, from the source dataset`}>
                       rows
                     </a>
                   </>
@@ -123,12 +123,12 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
         })}
       </ul>
       {kids.length > CAP ? (
-        <button type="button" onClick={() => setExpanded(showAll ? null : focus.data.id)} className="mt-2 text-[0.85rem] font-medium text-clay">
+        <button type="button" onClick={() => setExpanded(showAll ? null : focus.data.id)} className="link mt-2 text-[0.9rem]">
           {showAll ? 'Show fewer' : `Show all ${kids.length}`}
         </button>
       ) : null}
       {zeros > 0 ? (
-        <p className="mt-2 text-[0.75rem] text-ink-2">
+        <p className="mt-2 text-[0.85rem] text-ink-2">
           {zeros} more with no {measureLabel.toLowerCase()} amount this year {zeros === 1 ? 'is' : 'are'} not drawn.
         </p>
       ) : null}

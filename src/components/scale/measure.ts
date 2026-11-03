@@ -3,9 +3,9 @@ import type { LabelFont, Measurer } from '../../lib/treemap';
 
 /** Must match the label styles in Treemap.tsx. */
 export const LABEL_FONTS: Record<LabelFont, string> = {
-  name: '600 12.5px "Inter Variable", system-ui, sans-serif',
-  tiny: '500 11px "Inter Variable", system-ui, sans-serif',
-  amount: '400 11px "JetBrains Mono Variable", ui-monospace, monospace',
+  name: '600 12.5px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  tiny: '500 11px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  amount: '400 11px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 };
 
 /**

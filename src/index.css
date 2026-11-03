@@ -1,12 +1,45 @@
 @import 'tailwindcss';
 
+/*
+ * The only web font: Source Serif 4 (latin, variable weight), self-hosted from
+ * /public/fonts so index.html can preload it at a stable path. Headings and the
+ * wordmark only; body text uses the system stack.
+ */
+@font-face {
+  font-family: 'Source Serif 4 Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url('/fonts/source-serif-4-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
+ * Size-matched fallback while the serif loads: local Georgia Bold scaled to
+ * Source Serif 4 at 600 (average glyph width and vertical metrics), so the swap
+ * does not move the headings. Values measured with fontTools.
+ */
+@font-face {
+  font-family: 'Source Serif Fallback';
+  font-style: normal;
+  font-weight: 200 900;
+  src: local('Georgia Bold'), local('Georgia-Bold'), local('Georgia');
+  size-adjust: 94.4%;
+  ascent-override: 109.7%;
+  descent-override: 35.5%;
+  line-gap-override: 0%;
+}
+
 @theme {
   --color-paper: #f7f3ea;
   --color-paper-2: #efe9dc;
   --color-rule: #d9d1c2;
   --color-ink: #2b2824;
   --color-ink-2: #6b655c;
+  /* Fills, bars and chart marks. */
   --color-clay: #b5542d;
+  /* Clay for text under 24px (links, labels): 5.3:1 on paper. */
+  --color-clay-text: #a54a26;
   --color-clay-2: #e8c9b8;
   --color-moss: #5f7a5b;
   --color-slate: #4a5a6a;
@@ -14,11 +47,12 @@
   --color-sand-2: #d9be9c;
   --color-sand-3: #e6d3b8;
 
-  --font-display: 'Fraunces Variable', Georgia, serif;
-  --font-sans: 'Inter Variable', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --font-display: 'Source Serif 4 Variable', 'Source Serif Fallback', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --radius-card: 14px;
+  --radius-control: 6px;
+  --radius-card: 8px;
   --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -27,30 +61,51 @@
     background: var(--color-paper);
     color: var(--color-ink);
     -webkit-text-size-adjust: 100%;
-    text-rendering: optimizeLegibility;
   }
   body {
     margin: 0;
     font-family: var(--font-sans);
-    font-size: 16px;
-    line-height: 1.55;
-    font-feature-settings: 'ss01', 'cv11';
+    font-size: 17px;
+    line-height: 1.6;
     background: var(--color-paper);
   }
   h1,
-  h2,
-  h3 {
+  h2 {
     font-family: var(--font-display);
-    font-optical-sizing: auto;
-    font-weight: 560;
+    font-weight: 600;
     letter-spacing: -0.01em;
-    line-height: 1.15;
+    line-height: 1.1;
     text-wrap: balance;
   }
+  h1 {
+    font-size: 2.25rem;
+  }
+  @media (min-width: 768px) {
+    h1 {
+      font-size: 3rem;
+    }
+  }
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    line-height: 1.3;
+  }
   a {
-    color: var(--color-clay);
-    text-underline-offset: 3px;
+    color: var(--color-clay-text);
+    text-decoration-line: underline;
     text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--color-clay-text) 60%, transparent);
+    transition:
+      color 200ms var(--ease-out-soft),
+      text-decoration-color 200ms var(--ease-out-soft);
+  }
+  a:hover {
+    color: #8e3f20;
+    text-decoration-color: var(--color-clay-text);
   }
   :focus-visible {
     outline: 2px solid var(--color-clay);
@@ -63,71 +118,85 @@
 }
 
 @layer components {
-  /* Faint paper grain over the whole page; purely decorative. */
-  .grain {
-    position: relative;
-    isolation: isolate;
-  }
-  .grain::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 50;
-    opacity: 0.04;
-    mix-blend-mode: multiply;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.17 0 0 0 0 0.16 0 0 0 0 0.14 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-
+  /* Amounts: the body sans with tabular figures (never monospace). */
   .num {
-    font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    font-feature-settings: 'zero' 0;
-    letter-spacing: -0.01em;
   }
 
+  /* A button that reads as a link ("Clear", "Show all", "Close"). */
+  .link {
+    color: var(--color-clay-text);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: color-mix(in srgb, var(--color-clay-text) 60%, transparent);
+    cursor: pointer;
+  }
+  .link:hover {
+    color: #8e3f20;
+    text-decoration-color: var(--color-clay-text);
+  }
+  .link:disabled {
+    color: var(--color-ink-2);
+    text-decoration-color: var(--color-rule);
+    cursor: default;
+  }
+
+  /* Dataset IDs, account numbers and code. */
+  .code {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+  }
+
+  /* The one uppercase label per page, above the h1. */
   .eyebrow {
     font-family: var(--font-sans);
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.09em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-ink-2);
   }
 
-  .hairline {
-    border-color: var(--color-rule);
+  /* Table and column headers: sentence case, 14px, ink-2. */
+  .colhead {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--color-ink-2);
   }
 
-  /* Segmented pill control (year picker, measure toggle). */
+  /* Segmented control (Enacted / Spent): a 1px rule, 6px corners, no capsule. */
   .seg {
     display: inline-flex;
-    gap: 2px;
-    padding: 3px;
     border: 1px solid var(--color-rule);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--color-paper-2) 55%, transparent);
+    border-radius: var(--radius-control);
+    overflow: hidden;
   }
-  .seg > button,
-  .seg > a {
-    border-radius: 999px;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.875rem;
-    font-weight: 500;
+  .seg > button {
+    padding: 0.3rem 0.85rem;
+    font-size: 0.9rem;
     color: var(--color-ink-2);
-    transition:
-      background-color 220ms var(--ease-out-soft),
-      color 220ms var(--ease-out-soft);
     white-space: nowrap;
+    transition:
+      background-color 200ms var(--ease-out-soft),
+      color 200ms var(--ease-out-soft);
+  }
+  .seg > button + button {
+    border-left: 1px solid var(--color-rule);
   }
   .seg > button:hover {
     color: var(--color-ink);
   }
-  .seg > [aria-pressed='true'],
-  .seg > [aria-checked='true'] {
-    background: var(--color-paper);
+  .seg > button:focus-visible {
+    outline-offset: -2px;
+    border-radius: 0;
+  }
+  .seg > [aria-pressed='true'] {
+    background: var(--color-paper-2);
     color: var(--color-ink);
-    box-shadow: inset 0 0 0 1px var(--color-rule);
   }
 
   .svg-label {

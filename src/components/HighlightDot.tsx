@@ -1,4 +1,4 @@
-import { COLORS } from '../../lib/flowModel';
+import { COLORS } from '../lib/flowModel';
 
 /** Neutral marker for highlighted nodes: a small filled moss dot with a paper ring. */
 export function HighlightDot({ size = 8, onDark = false, title }: { size?: number; onDark?: boolean; title?: string }) {

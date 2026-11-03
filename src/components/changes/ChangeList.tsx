@@ -2,7 +2,8 @@ import type { ChangeRow } from '../../lib/diff';
 import { formatMoney, formatMoneyChange } from '../../lib/format';
 import { DiffBar } from './DiffBar';
 import { pctText } from './rowText';
-import { BucketTag, HighlightDot } from './Tags';
+import { HighlightDot } from '../HighlightDot';
+import { BucketTag } from './Tags';
 
 type Props = {
   rows: ChangeRow[];
@@ -17,10 +18,10 @@ export function ChangeList({ rows, max, highlighting, rowsHref }: Props) {
     <ul className="mt-3 border-t border-rule">
       {rows.map((r) => (
         <li key={r.id} className={`border-b border-rule/70 py-2.5 ${highlighting && r.highlighted ? 'bg-moss/[0.06]' : ''}`}>
-          <p className="flex items-center gap-1.5 text-[0.92rem] leading-snug">
-            {highlighting && r.highlighted ? <HighlightDot /> : null}
+          <p className="flex items-center gap-1.5 text-[1rem] leading-snug">
+            {highlighting && r.highlighted ? <HighlightDot title="Highlighted" /> : null}
             {r.account ? (
-              <a href={rowsHref(r.account)} className="min-w-0 truncate text-ink underline decoration-rule">
+              <a href={rowsHref(r.account)} className="min-w-0 truncate">
                 {r.name}
               </a>
             ) : (
@@ -28,7 +29,7 @@ export function ChangeList({ rows, max, highlighting, rowsHref }: Props) {
             )}
             {r.bucket ? <BucketTag /> : null}
           </p>
-          <p className="num mt-0.5 text-[0.8rem] text-ink-2">
+          <p className="num mt-0.5 text-[0.875rem] text-ink-2">
             {formatMoney(r.a)} → {formatMoney(r.b)} <span aria-hidden="true">·</span>{' '}
             <span className="text-ink">{formatMoneyChange(r.delta)}</span> ({pctText(r)})
           </p>

@@ -1,45 +1,57 @@
-import { useCallback } from 'react';
-import { useSearchParams } from 'react-router';
+import { useCallback, useMemo } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router';
+import { encodeHighlightParam, parseHighlightParam } from '../lib/highlight';
 import type { Measure } from '../lib/types';
 
 /**
  * Global view state lives in the URL so it survives navigation and can be shared:
- *   ?overlay=1     Conservation lines on
- *   ?fy=2026       fiscal year
- *   ?measure=enacted   Flow measure (default: spent)
+ *   ?fy=2026                    fiscal year
+ *   ?measure=enacted            measure (default: spent)
+ *   ?hl=sec:EEA,dept:EHS/DMH    highlighted secretariats/departments
  */
-export const KEPT_PARAMS = ['overlay', 'fy', 'measure'] as const;
+export const KEPT_PARAMS = ['fy', 'measure', 'hl'] as const;
+
+/**
+ * URLSearchParams escapes ":", "/" and ",", which are legal in a query string.
+ * Unescape them so `?hl=sec:EEA,dept:EHS/DMH` stays readable when shared.
+ */
+export function prettySearch(params: URLSearchParams): string {
+  const s = params.toString().replace(/%3A/gi, ':').replace(/%2F/gi, '/').replace(/%2C/gi, ',');
+  return s ? `?${s}` : '';
+}
 
 export function useLedgerParams() {
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const overlay = params.get('overlay') === '1';
   const fyRaw = Number(params.get('fy'));
   const fy = Number.isInteger(fyRaw) && fyRaw > 2000 ? fyRaw : null;
   const measure: Measure = params.get('measure') === 'enacted' ? 'enacted' : 'actual';
+  const hlRaw = params.get('hl');
+  const hl = useMemo(() => parseHighlightParam(hlRaw), [hlRaw]);
 
   const update = useCallback(
     (key: string, value: string | null) => {
-      setParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (value === null) next.delete(key);
-          else next.set(key, value);
-          return next;
-        },
-        { replace: true, preventScrollReset: true },
+      const next = new URLSearchParams(location.search);
+      if (value === null) next.delete(key);
+      else next.set(key, value);
+      navigate(
+        { pathname: location.pathname, search: prettySearch(next), hash: location.hash },
+        { replace: true, preventScrollReset: true, state: location.state },
       );
     },
-    [setParams],
+    [location, navigate],
   );
 
   return {
-    overlay,
     fy,
     measure,
-    setOverlay: (on: boolean) => update('overlay', on ? '1' : null),
+    /** Highlight ids from the URL, unvalidated against any year's tree. */
+    hl,
     setYear: (year: number) => update('fy', String(year)),
     setMeasure: (m: Measure) => update('measure', m === 'enacted' ? 'enacted' : null),
+    setHighlight: (ids: readonly string[]) => update('hl', encodeHighlightParam(ids)),
     /** Search string to carry across nav links. */
     carry: () => {
       const next = new URLSearchParams();
@@ -47,8 +59,7 @@ export function useLedgerParams() {
         const v = params.get(k);
         if (v) next.set(k, v);
       }
-      const s = next.toString();
-      return s ? `?${s}` : '';
+      return prettySearch(next);
     },
   };
 }

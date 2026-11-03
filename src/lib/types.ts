@@ -30,7 +30,6 @@ export type TreeNode = {
   enacted: number;
   gaa: number;
   actual: number;
-  conservation?: true;
   other?: true;
   children?: TreeNode[];
 };
@@ -42,7 +41,6 @@ export type FlowNode = {
   name: string;
   kind: FlowNodeKind;
   value: number;
-  conservation?: true;
   parent?: string;
   other?: true;
 };
@@ -58,3 +56,26 @@ export type Flows = {
   spendingTotal: number;
   measure: Measure;
 };
+
+/** One program in data/diff/fy{A}_fy{B}.json (docs/DATA_CONTRACT.md "Changes"). */
+export type DiffRow = {
+  id: string;
+  name: string;
+  /** "Secretariat › Department" */
+  path: string;
+  /** Secretariat and department node ids, as in tree.json ("sec:EHS", "dept:EHS/DMH"). */
+  secId?: string;
+  deptId?: string;
+  code?: string;
+  enactedA: number;
+  enactedB: number;
+  actualA: number;
+  actualB: number;
+  dEnacted: number;
+  dActual: number;
+  /** Percent units (1.9 = 1.9%); null when the A value is 0. */
+  pctEnacted: number | null;
+  pctActual: number | null;
+};
+
+export type DiffFile = { a: number; b: number; rows: DiffRow[] };

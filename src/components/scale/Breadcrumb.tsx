@@ -4,7 +4,7 @@ import type { ScaleNode } from '../../lib/treemap';
 export function Breadcrumb({ chain, onPick }: { chain: ScaleNode[]; onPick: (index: number) => void }) {
   return (
     <nav aria-label="Zoom level" className="min-w-0">
-      <ol className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[0.95rem]">
+      <ol className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-[1rem]">
         {chain.map((n, i) => {
           const last = i === chain.length - 1;
           return (
@@ -19,7 +19,7 @@ export function Breadcrumb({ chain, onPick }: { chain: ScaleNode[]; onPick: (ind
                   {n.data.name}
                 </span>
               ) : (
-                <button type="button" onClick={() => onPick(i)} className="text-clay underline decoration-1 underline-offset-[3px] hover:text-ink">
+                <button type="button" onClick={() => onPick(i)} className="link">
                   {n.data.name}
                 </button>
               )}

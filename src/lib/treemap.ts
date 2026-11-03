@@ -3,8 +3,8 @@
  * hierarchy + layout, colors and label fitting. No DOM, so it can be unit tested.
  */
 import { hierarchy, treemap, treemapSquarify, type HierarchyNode, type HierarchyRectangularNode } from 'd3-hierarchy';
-import { scaleLinear } from 'd3-scale';
-import { COLORS } from './flowModel';
+import { COLORS, warmRamp } from './flowModel';
+import type { HighlightSet } from './highlight';
 import type { Measure, TreeNode } from './types';
 
 /* ------------------------------------------------------------------ */
@@ -104,28 +104,9 @@ export function resolveScalePath(root: ScaleNode, ids: string[]): ScaleNode[] {
 /* Highlight                                                           */
 /* ------------------------------------------------------------------ */
 
-/**
- * Highlighting is a generic set of secretariat/department ids. A node is
- * highlighted when it or any ancestor is in the set.
- */
-export type HighlightSet = ReadonlySet<string>;
-
-export const NO_HIGHLIGHT: HighlightSet = new Set();
-
-/**
- * The one place that knows where today's highlight comes from: the `overlay`
- * URL param selects every secretariat/department flagged in tree.json.
- */
-export function highlightFromOverlay(tree: TreeNode, overlay: boolean): HighlightSet {
-  if (!overlay) return NO_HIGHLIGHT;
-  const out = new Set<string>();
-  const walk = (n: TreeNode) => {
-    if (n.conservation && (n.id.startsWith('sec:') || n.id.startsWith('dept:'))) out.add(n.id);
-    n.children?.forEach(walk);
-  };
-  walk(tree);
-  return out;
-}
+/** A node is highlighted when it or any ancestor is in the set (see lib/highlight.ts). */
+export type { HighlightSet } from './highlight';
+export { NO_HIGHLIGHT } from './highlight';
 
 export function isHighlighted(node: ScaleNode, set: HighlightSet): boolean {
   if (set.size === 0) return false;
@@ -222,11 +203,6 @@ export function layoutTreemap(focus: ScaleNode, width: number, height: number): 
 /* Color                                                               */
 /* ------------------------------------------------------------------ */
 
-/** Same warm ramp as the Flow view (clay → sand). */
-const warmRamp = scaleLinear<string>()
-  .domain([0, 0.34, 0.67, 1])
-  .range([COLORS.clay, COLORS.sand1, COLORS.sand2, COLORS.sand3]);
-
 /**
  * Secretariat base colors. As in the Flow view, offices under `minShare` of the
  * total share the last sand tint, so the ramp spreads over the ones you can see.
@@ -265,14 +241,24 @@ export function cellFill(base: string, treeDepth: number): string {
   return tint(base, DEPTH_TINT[Math.min(treeDepth, DEPTH_TINT.length - 1)] ?? 0.52);
 }
 
-/** Ink or paper, whichever reads better on `fill`. */
-export function textOn(fill: string): string {
-  const [r, g, b] = rgb(fill).map((v) => {
+function luminance(color: string): number {
+  const [r, g, b] = rgb(color).map((v) => {
     const s = v / 255;
     return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
   }) as [number, number, number];
-  const L = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return L < 0.22 ? COLORS.paper : COLORS.ink;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+/** Label colors for cells: white on the darker fills, near-black on the lighter ones. */
+export const LABEL_LIGHT = '#FFFFFF';
+export const LABEL_DARK = '#1A1714';
+
+/** White or near-black, whichever has more contrast on `fill` (labels are 11–12.5px, so this needs 4.5:1). */
+export function textOn(fill: string): string {
+  const L = luminance(fill);
+  const onLight = (1.05) / (L + 0.05);
+  const onDark = (L + 0.05) / (luminance(LABEL_DARK) + 0.05);
+  return onLight >= onDark ? LABEL_LIGHT : LABEL_DARK;
 }
 
 /* ------------------------------------------------------------------ */

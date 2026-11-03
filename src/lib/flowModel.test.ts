@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fixtureFlows } from '../fixtures';
+import { fixtureFlows, fixtureTree } from '../fixtures';
 import { buildFlowModel } from './flowModel';
 
 const flows = fixtureFlows('enacted');
@@ -18,7 +18,22 @@ describe('buildFlowModel', () => {
     const m = buildFlowModel(flows, { focus: 'sec:EEA' });
     const programs = m.nodes.filter((n) => n.kind === 'program');
     expect(programs.every((p) => p.parent === 'sec:EEA')).toBe(true);
-    expect(programs.every((p) => p.conservation)).toBe(true);
+    expect(programs.some((p) => p.highlighted)).toBe(false);
+  });
+
+  it('highlights a selected secretariat, its programs and its links', () => {
+    const m = buildFlowModel(flows, { focus: 'sec:EEA', highlight: new Set(['sec:EEA']), tree: fixtureTree() });
+    expect(m.nodes.find((n) => n.id === 'sec:EEA')!.highlighted).toBe(true);
+    expect(m.nodes.filter((n) => n.kind === 'program').every((p) => p.highlighted)).toBe(true);
+    expect(m.links.filter((l) => l.target === 'sec:EEA').every((l) => l.highlighted)).toBe(true);
+    expect(m.nodes.find((n) => n.id === 'sec:EHS')!.highlighted).toBe(false);
+  });
+
+  it('highlights only the programs of a selected department', () => {
+    const tree = fixtureTree();
+    const m = buildFlowModel(flows, { focus: 'sec:EHS', highlight: new Set(['dept:EHS/MentalHealth']), tree });
+    const hl = m.nodes.filter((n) => n.highlighted).map((n) => n.id);
+    expect(hl).toEqual(['prog:50110100']);
   });
 
   it('orders columns by value', () => {
@@ -34,10 +49,10 @@ describe('buildFlowModel', () => {
 });
 
 describe('foldSmallSecretariats', () => {
-  it('folds tiny secretariats but never conservation ones', async () => {
+  it('folds tiny secretariats but never kept (highlighted) ones', async () => {
     const { foldSmallSecretariats, SMALL_SECS } = await import('./flowModel');
     const f = fixtureFlows('enacted');
-    const folded = foldSmallSecretariats(f, 0.05);
+    const folded = foldSmallSecretariats(f, 0.05, (id) => id === 'sec:EEA');
     const secs = folded.nodes.filter((n) => n.kind === 'secretariat');
     expect(secs.some((n) => n.id === SMALL_SECS)).toBe(true);
     expect(secs.some((n) => n.id === 'sec:EEA')).toBe(true);

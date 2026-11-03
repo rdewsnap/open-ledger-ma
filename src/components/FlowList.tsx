@@ -3,9 +3,10 @@ import { accountOf, socrataRowsUrl } from '../lib/data';
 import { useMeta } from '../state/meta';
 import { COLORS, type FlowModel, type ModelNode } from '../lib/flowModel';
 import { formatMoney, formatShare } from '../lib/format';
-import { Leaf } from './Icons';
+import { HighlightDot } from './HighlightDot';
+import { Chevron } from './Icons';
 
-type Props = { model: FlowModel; overlay: boolean; spendWord: string; year: number };
+type Props = { model: FlowModel; highlighting: boolean; spendWord: string; year: number };
 
 const CAP = 12;
 
@@ -18,24 +19,25 @@ function Bar({ value, max, color, dim }: { value: number; max: number; color: st
   );
 }
 
-function Row({ node, whole, wholeLabel, max, overlay, color, rowsHref }: { node: ModelNode; whole: number; wholeLabel: string; max: number; overlay: boolean; color: string; rowsHref?: string }) {
-  const cons = overlay && node.conservation;
+function Row({ node, whole, wholeLabel, max, highlighting, color, rowsHref }: { node: ModelNode; whole: number; wholeLabel: string; max: number; highlighting: boolean; color: string; rowsHref?: string }) {
+  const hl = highlighting && node.highlighted;
+  const lens = highlighting && node.kind !== 'revenue';
   return (
     <>
       <div className="flex items-baseline justify-between gap-3">
-        <span className="flex min-w-0 items-center gap-1.5 text-[0.95rem] leading-snug text-ink">
-          {cons ? <Leaf className="h-3.5 w-3.5 shrink-0 text-moss" title="Conservation line" /> : null}
+        <span className="flex min-w-0 items-center gap-1.5 text-[1rem] leading-snug text-ink">
+          {hl ? <HighlightDot title="Highlighted" /> : null}
           <span className="truncate">{node.name}</span>
         </span>
-        <span className="num shrink-0 text-[0.92rem] text-ink">{formatMoney(node.amount)}</span>
+        <span className="num shrink-0 text-[0.95rem] text-ink">{formatMoney(node.amount)}</span>
       </div>
-      <Bar value={node.amount} max={max} color={cons ? COLORS.moss : color} dim={overlay && !node.conservation} />
-      <p className="mt-1 text-[0.75rem] text-ink-2">
+      <Bar value={node.amount} max={max} color={hl ? COLORS.moss : color} dim={lens && !hl} />
+      <p className="mt-1 text-[0.85rem] text-ink-2">
         <span className="num">{formatShare(node.amount, whole)}</span> of {wholeLabel}
         {rowsHref ? (
           <>
-            <span aria-hidden="true" className="px-1.5 text-rule">·</span>
-            <a href={rowsHref} aria-label={`Source rows for ${node.name}`}>rows</a>
+            <span aria-hidden="true" className="px-1.5 text-ink-2/60">·</span>
+            <a href={rowsHref} aria-label={`rows for ${node.name}, from the source dataset`}>rows</a>
           </>
         ) : null}
       </p>
@@ -44,7 +46,7 @@ function Row({ node, whole, wholeLabel, max, overlay, color, rowsHref }: { node:
 }
 
 /** Phone layout (<640px): revenue list, then secretariats that expand to programs. */
-export function FlowList({ model, overlay, spendWord, year }: Props) {
+export function FlowList({ model, highlighting, spendWord, year }: Props) {
   const { meta } = useMeta();
   const [open, setOpen] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -54,19 +56,19 @@ export function FlowList({ model, overlay, spendWord, year }: Props) {
   return (
     <div className="space-y-10">
       <section aria-labelledby="list-rev">
-        <h2 id="list-rev" className="eyebrow !font-sans">Revenue</h2>
+        <h2 id="list-rev" className="text-[1.35rem]">Revenue</h2>
         <ul className="mt-2 divide-y divide-rule border-y border-rule">
           {model.revenue.map((r) => (
             <li key={r.id} className="py-3">
-              <Row node={r} whole={model.revenueTotal} wholeLabel="revenue collected" max={revMax} overlay={overlay} color={r.color} />
+              <Row node={r} whole={model.revenueTotal} wholeLabel="revenue collected" max={revMax} highlighting={highlighting} color={r.color} />
             </li>
           ))}
         </ul>
       </section>
 
       <section aria-labelledby="list-sec">
-        <h2 id="list-sec" className="eyebrow !font-sans">Secretariats</h2>
-        <p className="mt-1 text-[0.8rem] text-ink-2">Tap a row to see its programs.</p>
+        <h2 id="list-sec" className="text-[1.35rem]">Secretariats</h2>
+        <p className="mt-1 text-[0.9rem] text-ink-2">Tap a row to see its programs.</p>
         <ul className="mt-2 divide-y divide-rule border-y border-rule">
           {model.secretariats.map(({ node, programs }) => {
             const expanded = open === node.id;
@@ -83,12 +85,10 @@ export function FlowList({ model, overlay, spendWord, year }: Props) {
                   }}
                   className={`block w-full py-3 text-left transition-colors duration-200 ${expanded ? 'bg-paper-2/60' : ''}`}
                 >
-                  <Row node={node} whole={model.spendingTotal} wholeLabel={`total ${spendWord}`} max={secMax} overlay={overlay} color={expanded ? COLORS.clay : node.color} />
-                  <span className="mt-1 inline-flex items-center gap-1 text-[0.75rem] font-medium text-clay">
+                  <Row node={node} whole={model.spendingTotal} wholeLabel={`total ${spendWord}`} max={secMax} highlighting={highlighting} color={expanded ? COLORS.clay : node.color} />
+                  <span className="mt-1 inline-flex items-center gap-1 text-[0.85rem] font-medium text-clay-text">
                     {expanded ? 'Hide programs' : `${programs.length} program${programs.length === 1 ? '' : 's'}`}
-                    <svg viewBox="0 0 10 10" className={`h-2.5 w-2.5 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} aria-hidden="true">
-                      <path d="M2 3.5 5 6.5 8 3.5" stroke="currentColor" fill="none" strokeWidth="1.4" strokeLinecap="round" />
-                    </svg>
+                    <Chevron open={expanded} />
                   </span>
                 </button>
                 {expanded ? (
@@ -102,7 +102,7 @@ export function FlowList({ model, overlay, spendWord, year }: Props) {
                             whole={node.amount}
                             wholeLabel={node.name}
                             max={pMax}
-                            overlay={overlay}
+                            highlighting={highlighting}
                             color={node.color}
                             rowsHref={acct ? socrataRowsUrl(meta.sources.spending, year, acct) : undefined}
                           />
@@ -111,7 +111,7 @@ export function FlowList({ model, overlay, spendWord, year }: Props) {
                     })}
                     {programs.length > CAP ? (
                       <li className="py-2">
-                        <button type="button" onClick={() => setShowAll(!showAll)} className="text-[0.8rem] font-medium text-clay">
+                        <button type="button" onClick={() => setShowAll(!showAll)} className="link text-[0.9rem]">
                           {showAll ? 'Show fewer' : `Show all ${programs.length}`}
                         </button>
                       </li>

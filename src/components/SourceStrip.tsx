@@ -1,32 +1,55 @@
+import { Fragment } from 'react';
 import { socrataRowsUrl } from '../lib/data';
-import { partialLabel } from '../lib/format';
+import { fyShort, partialLabel } from '../lib/format';
 import { DATASET_NAMES } from '../lib/site';
 import { useMeta } from '../state/meta';
 
-export function SourceStrip({ showRevenue = false }: { showRevenue?: boolean }) {
-  const { meta, year, partial } = useMeta();
+type Props = {
+  showRevenue?: boolean;
+  /** Years this view draws from (default: the selected year). Each gets a rows link and, if open, an in-progress note. */
+  years?: number[];
+};
+
+const Dot = () => (
+  <span aria-hidden="true" className="px-1.5 text-ink-2/60">
+    ·
+  </span>
+);
+
+export function SourceStrip({ showRevenue = false, years }: Props) {
+  const { meta, year } = useMeta();
   const s = meta.sources.spending;
   const r = meta.sources.revenue;
+  const list = years?.length ? years : [year];
+  const multi = list.length > 1;
+  const partials = list.flatMap((y) => {
+    const p = meta.partial?.[String(y)];
+    return p ? [{ y, p }] : [];
+  });
   return (
-    <p className="mt-8 border-t border-rule pt-3 text-[0.8rem] leading-relaxed text-ink-2">
-      Source:{' '}
-      <a href={s.url} className="text-ink-2 hover:text-clay">{DATASET_NAMES[s.id] ?? s.name}</a> (<span className="num">{s.id}</span>), pulled{' '}
-      <span className="num">{s.pulled}</span>
-      <span aria-hidden="true" className="px-1.5 text-rule">·</span>
-      <a href={socrataRowsUrl(s, year)} className="hover:text-clay">rows</a>
+    <p className="mt-8 border-t border-rule pt-3 text-[0.875rem] leading-relaxed text-ink-2">
+      Source: <a href={s.url}>{DATASET_NAMES[s.id] ?? s.name}</a> (<span className="code">{s.id}</span>), pulled <span className="num">{s.pulled}</span>
+      <Dot />
+      {list.map((y, i) => (
+        <Fragment key={y}>
+          {i > 0 ? <Dot /> : null}
+          <a href={socrataRowsUrl(s, y)} aria-label={multi ? undefined : `rows for ${fyShort(y)}, from the source dataset`}>
+            {multi ? `${fyShort(y)} rows` : 'rows'}
+          </a>
+        </Fragment>
+      ))}
       {showRevenue ? (
         <>
-          <span aria-hidden="true" className="px-1.5 text-rule">·</span>
-          Revenue: <a href={r.url} className="text-ink-2 hover:text-clay">{DATASET_NAMES[r.id] ?? r.name}</a> (<span className="num">{r.id}</span>), pulled{' '}
-          <span className="num">{r.pulled}</span>
+          <Dot />
+          Revenue: <a href={r.url}>{DATASET_NAMES[r.id] ?? r.name}</a> (<span className="code">{r.id}</span>), pulled <span className="num">{r.pulled}</span>
         </>
       ) : null}
-      {partial ? (
-        <>
+      {partials.map(({ y, p }) => (
+        <Fragment key={y}>
           <br />
-          <span>{partialLabel(year, partial)}.</span>
-        </>
-      ) : null}
+          <span>{partialLabel(y, p)}.</span>
+        </Fragment>
+      ))}
     </p>
   );
 }
