@@ -1,0 +1,307 @@
+line_item,secretariat,department,program,notes
+03211500,JUD,CPC,Public Counsel Services administration,
+03211510,JUD,CPC,Court-appointed private counsel,
+03211520,JUD,CPC,Indigent defense fees & court costs,
+03211600,JUD,SJC,Civil legal aid (MLAC),Massachusetts Legal Assistance Corporation.
+03300101,JUD,TRC,Superior Court justices,
+03300300,JUD,TRC,Trial Court administration,"Also has rows under AGO, DMH, EHS, MCD, SDC, SUF, TRE, UMS; rolled up here."
+03310100,JUD,TRC,Superior Court,
+03320100,JUD,TRC,District Court,
+03330002,JUD,TRC,Probate & Family Court,
+03370002,JUD,TRC,Juvenile Court,
+03391001,JUD,TRC,Probation services,Also has rows under MAS; rolled up here.
+03391003,JUD,TRC,Community corrections,"Also has rows under HSD, SDD, SDF, SDH, SDW; rolled up here."
+03400100,DAS,SUF,Suffolk District Attorney,Also has rows under DAA; rolled up here.
+03400200,DAS,NOR,Northern (Middlesex) District Attorney,Also has rows under DAA; rolled up here.
+05210000,SEC,SEC,Elections,
+06400000,TRE,LOT,State Lottery operations,"Also has rows under DPH, TRE; rolled up here."
+06400300,TRE,ART,Mass Cultural Council grants,
+06990014,TRE,TRE,Accelerated Bridge Program debt service,Fund: Commonwealth Transportation Fund.
+06990015,TRE,TRE,Debt service (interest),"CTHRU name: For the payment of interest, discount and ..."
+06990018,TRE,TRE,Agency debt service programs,Fund: Intragovernmental Services Fund.
+06992005,TRE,TRE,Central Artery/Tunnel debt service,Fund: Commonwealth Transportation Fund.
+06999100,TRE,TRE,Bond issuance costs,
+07100000,AUD,SAO,State Auditor's Office,
+08100000,AGO,AGO,Attorney General's Office,"Also has rows under DCP, POL, VWA; rolled up here."
+10000008,OSC,OSC,State accounting system (chargeback),Intragovernmental. Fund: Intragovernmental Services Fund.
+11001700,ANF,ANF,A&F information technology,Also has rows under GOV; rolled up here.
+11001701,ANF,ANF,A&F information technology (chargeback),Intragovernmental. Fund: Intragovernmental Services Fund.
+11023199,ANF,DCP,State facilities management,
+11085200,ANF,GIC,State employee health insurance (GIC),Also has rows under UMS; rolled up here.
+12010100,ANF,DOR,Department of Revenue administration,Also has rows under AGO; rolled up here.
+12010130,ANF,DOR,Tax revenue management & collection,"Also has rows under AGO, EHS, EPS, POL, TRE; rolled up here."
+12010160,ANF,DOR,Child support enforcement,
+12332000,ANF,DOR,Property tax exemption reimbursements to towns,CTHRU name: Reimbursement for loss of taxes ...
+12332350,ANF,DOR,Unrestricted local aid,
+12332400,ANF,DOR,Payments in lieu of taxes on state land,
+14100400,VET,VET,Veterans' benefits (Chapter 115),
+15950155,STW,CTR,Payroll tax funding,
+15950604,HLC,OCD,Housing preservation trust transfer,
+15951010,STW,CTR,Pension fund transfer,Transfer to the Pension Liabilities Fund; funded through other statutorily authorized spending.
+15951068,STW,CTR,Transfer to MassHealth provider trust fund,Transfer to the Medical Assistance Trust Fund.
+15951070,STW,CTR,Safety Net Provider Trust Fund transfer,
+15952508,DOT,DOT,MBTA deficiency fund,Fund: Education and Transportation Fund (income surtax).
+15956232,EEA,ENV,Transfer to MassCEC,Massachusetts Clean Energy Center.
+15956368,STW,CTR,Transportation Fund transfer to MassDOT,Commonwealth Transportation Fund to the Massachusetts Transportation Trust Fund. Fund: Commonwealth Transportation Fund.
+15956369,STW,CTR,Transportation Fund transfer to MBTA,Fund: Commonwealth Transportation Fund.
+15956370,STW,CTR,Transportation Fund transfer to regional transit,Fund: Commonwealth Transportation Fund.
+15962026,ANF,ANF,World Cup transportation,Also has rows under EPS; rolled up here. Fund: Education and Transportation Fund (income surtax).
+15962402,DOT,DOT,Highway bridge preservation,Fund: Education and Transportation Fund (income surtax).
+15962404,DOT,DOT,MBTA capital investments,Fund: Education and Transportation Fund (income surtax).
+15962405,DOT,DOT,MBTA means-tested fares,Fund: Education and Transportation Fund (income surtax).
+15962406,DOT,DOT,Regional transit grants,Fund: Education and Transportation Fund (income surtax).
+15962410,EDU,EEC,Child care grants to providers,Fund: Education and Transportation Fund (income surtax).
+15962411,EDU,EEC,Child care waitlist (income-eligible),Fund: Education and Transportation Fund (income surtax).
+15962414,EDU,RGT,College financial aid expansion,Also has rows under EDU; rolled up here. Fund: Education and Transportation Fund (income surtax).
+15962417,EDU,RGT,Higher education capital,"Also has rows under BHC, BRC, DCP, FRC, MBC, MCA, MCC, MWC, NAC, NEC, NSC, RCC, SSA, STC, UMS, WOR; rolled up here. Fund: Education and Transportation Fund (income surtax)."
+15962422,EDU,DOE,Universal school meals,Fund: Education and Transportation Fund (income surtax).
+15962423,EDU,RGT,Targeted scholarships,Fund: Education and Transportation Fund (income surtax).
+15962424,EDU,DOE,Green school projects,Fund: Education and Transportation Fund (income surtax).
+15962428,DOT,DOT,Roads & bridges supplemental aid,Fund: Education and Transportation Fund (income surtax).
+15962431,EDU,EDU,School building capital (MSBA),Fund: Education and Transportation Fund (income surtax).
+15962438,EDU,DOE,Minimum per-pupil aid,Also has rows under DOR; rolled up here. Fund: Education and Transportation Fund (income surtax).
+15962450,EDU,DOE,Student Opportunity Act expansion,Also has rows under DOR; rolled up here. Fund: Education and Transportation Fund (income surtax).
+15962451,EDU,DOE,School transportation reimbursements,Fund: Education and Transportation Fund (income surtax).
+15962501,EDU,RGT,Free community college,Fund: Education and Transportation Fund (income surtax).
+15962505,DOT,DOT,Regional transit workforce development,Fund: Education and Transportation Fund (income surtax).
+15962507,DOT,DOT,Local transportation projects,Also has rows under DCR; rolled up here. Fund: Education and Transportation Fund (income surtax).
+15962516,EDU,DOE,Special education circuit breaker (Fair Share),Fund: Education and Transportation Fund (income surtax).
+15962517,EDU,EDU,Local education projects,"Also has rows under DOE, EEC, RGT; rolled up here. Fund: Education and Transportation Fund (income surtax)."
+15962523,DOT,DOT,Supplemental Chapter 90 road aid,Fund: Education and Transportation Fund (income surtax).
+15962525,EDU,RGT,Higher education deferred maintenance,"Also has rows under BHC, BRC, BSC, CCC, DCP, FRC, FSC, HCC, MAS, MBC, MCA, MCC, MMA, MWC, NAC, NSC, QCC, RCC, SSA, STC, UMS, WSC; rolled up here. Fund: Education and Transportation Fund (income surtax)."
+15962527,DOT,DOT,MassDOT snow & ice,Fund: Education and Transportation Fund (income surtax).
+15962604,EDU,DOE,Special education circuit breaker reserve,Fund: Education and Transportation Innovation and Capital Fund (income surtax).
+15962612,DOT,DOT,MBTA operating assistance,Fund: Education and Transportation Innovation and Capital Fund (income surtax).
+15962626,DOT,DOT,Municipal winter relief,Fund: Education and Transportation Innovation and Capital Fund (income surtax).
+15990026,ANF,ANF,Municipal regionalization incentives,"Also has rows under DOR, EPS, FWE; rolled up here."
+15990093,ANF,ANF,Clean water contract assistance,Also has rows under TRE; rolled up here.
+15990514,ANF,ANF,Family shelter reserve (1599-0514),"Also has rows under CDA, CHE, DCP, DCR, DOE, DOR, DPH, EDU, EEC, EHS, MIL, OCD, ORI, SEC; rolled up here. Fund: Transitional Escrow Fund."
+15990793,ANF,ANF,COVID response reserve,"Also has rows under DPH, EHS; rolled up here."
+15990924,EPS,MIL,Immigration & refugee reserve,"Also has rows under CDA, DPH, EHS, EOL, ORI; rolled up here."
+15991213,ANF,ANF,Family shelter reserve (1599-1213),"Also has rows under CHE, DMH, DOC, DPH, EEC, EHS, EOL, ITD, OCD, ORI; rolled up here. Fund: Transitional Escrow Fund."
+15991970,ANF,ANF,Central Artery maintenance,Fund: Commonwealth Transportation Fund.
+15991971,ANF,ANF,Snow & ice removal,
+15992021,HLC,OCD,Commonwealth Builder housing program,Fund: Federal COVID-19 Response Fund.
+15992022,HLC,OCD,Affordable rental housing production,Fund: Federal COVID-19 Response Fund.
+15992023,HLC,OCD,Senior & veteran supportive housing,Also has rows under VET; rolled up here. Fund: Federal COVID-19 Response Fund.
+15992024,HLC,OCD,Public housing maintenance,Fund: Federal COVID-19 Response Fund.
+15992025,EHS,DPH,Local & regional public health,"Also has rows under ANF, EHS; rolled up here. Fund: Federal COVID-19 Response Fund."
+15992026,EHS,EHS,Behavioral health & addiction services,"Also has rows under ANF, DMH; rolled up here. Fund: Federal COVID-19 Response Fund."
+15992031,EEA,ENV,Environmental infrastructure,"Also has rows under ANF, CDA, DCR, EED, EOL, FWE; rolled up here. Fund: Transitional Escrow Fund."
+15992037,LWD,EOL,Workforce development,"Also has rows under ANF, EDU; rolled up here. Fund: Transitional Escrow Fund."
+15992038,EDU,EDU,Vocational school infrastructure,Also has rows under ANF; rolled up here. Fund: Transitional Escrow Fund.
+15992043,ANF,ANF,Tourism & cultural assets,"Also has rows under ART, DCR, EED; rolled up here. Fund: Transitional Escrow Fund."
+15992055,EDU,DOE,School HVAC improvements,Also has rows under ANF; rolled up here. Fund: Transitional Escrow Fund.
+15992056,EDU,RGT,Educational supports,"Also has rows under ANF, DMR, DOE, MCB, MRC, UMS; rolled up here. Fund: Transitional Escrow Fund."
+15992301,ANF,HRD,Tatum reserve,
+15992625,ANF,ANF,Family shelter reserve (1599-2625),"Also has rows under CHE, DCP, DCR, DOC, DOE, DOR, DPH, EEC, EHS, EOL, ITD, MIL, OCD, ORI; rolled up here. Fund: Transitional Escrow Fund."
+15993100,STW,CTR,State unemployment insurance costs,Internal service fund (intragovernmental). Fund: Intragovernmental Services Fund.
+15993384,STW,CTR,Court judgments reserve,
+15994448,ANF,ANF,Collective bargaining costs reserve,CTHRU name: FY17 CB Contract Costs.
+15996060,EED,EED,Broadband support,Fund: Broadband Innovation Fund.
+15996062,EED,EED,Business support,Fund: Federal COVID-19 Response Fund.
+15996063,EED,EED,Local community development projects,"Also has rows under ANF, DCR, DMR, DOE, DOT, EHS, ELD, EOL, EPS, EQE, OCD; rolled up here. Fund: Federal COVID-19 Response Fund."
+15996064,EHS,EHS,Nursing facilities & rest homes,
+15996067,EHS,EHS,Community health centers,Fund: Federal COVID-19 Response Fund.
+15996075,EEA,DCR,Green space & infrastructure investments,"Also has rows under AGR, ANF, EED, ENV, FWE; rolled up here. Fund: Federal COVID-19 Response Fund."
+15996076,EEA,DCR,Environmental justice investments,"Also has rows under AGR, ANF, ENV, FWE; rolled up here. Fund: Federal COVID-19 Response Fund."
+15996081,EEA,ENV,Clean energy center initiatives,"Also has rows under ANF, BCC, CDA, CJT, DCP, DMR, DOS, DPH, EHS, FWE, HSD, PAR, QCC, SRB; rolled up here. Fund: Federal COVID-19 Response Fund."
+15996083,ANF,ANF,Home heating assistance (LIHEAP),Also has rows under OCD; rolled up here. Fund: Federal COVID-19 Response Fund.
+15996084,HLC,OCD,Housing production,Fund: Federal COVID-19 Response Fund.
+15996085,HLC,OCD,Equitable developers' fund,Fund: Federal COVID-19 Response Fund.
+15996087,EDU,RGT,Scholarship program,Also has rows under ANF; rolled up here. Fund: Federal COVID-19 Response Fund.
+15996089,ANF,ANF,Local economic development projects,"Also has rows under DCR, DOE, EED, EHS, ENV, OCD; rolled up here. Fund: Federal COVID-19 Response Fund."
+15996152,STW,CTR,Transfer to retiree health trust fund,State Retiree Benefits Trust Fund.
+15996903,ANF,ANF,Chapter 257 provider rate reserve,
+15999817,ANF,ANF,ARPA home & community-based services reserve,"Also has rows under EHS, MRC; rolled up here."
+17500105,ANF,HRD,State employee workers' compensation,Internal service fund (intragovernmental). Fund: Intragovernmental Services Fund.
+17500300,ANF,HRD,Union health & welfare fund contributions,
+17900200,TSS,ITD,State IT services (chargeback),"Intragovernmental: other agencies pay this account for IT services. Also has rows under AGO, UMS; rolled up here. Fund: Intragovernmental Services Fund."
+17900201,TSS,ITD,Technology pass-through (chargeback),Intragovernmental. Fund: Intragovernmental Services Fund.
+17901700,TSS,ITD,Core technology services & security,"Also has rows under CDA, CHS, CME, CPF, DOC, EED, EPS, GOV, IGO, MID, NFK, PAR, SDC, SDE, SDM, VET; rolled up here."
+17901701,TSS,ITD,Core technology services (chargeback),Intragovernmental. Fund: Intragovernmental Services Fund.
+20000100,EEA,ENV,EEA administration,"Also has rows under AGR, DCP, DCR, EQE, FWE, GOV, SRB; rolled up here."
+20001700,EEA,ENV,EEA information technology,"Also has rows under AGR, DCR, EQE, FWE, ITD; rolled up here."
+21000012,EEA,DPU,Department of Public Utilities,Also has rows under ENV; rolled up here.
+22000100,EEA,EQE,Environmental Protection administration,"Also has rows under AGO, MMA; rolled up here."
+23100200,EEA,FWE,Fisheries & Wildlife,Fund: Inland Fisheries and Game Fund.
+25110105,EEA,AGR,Emergency food assistance,CTHRU name: For the purpose of supplemental foods ... Also has rows under MWC; rolled up here.
+28000501,EEA,DCR,Beach preservation,
+28100100,EEA,DCR,State parks & recreation,"Also has rows under CDA, DOC, DPH, ENV, FWE, SDE; rolled up here."
+30001020,EDU,EEC,Child care quality improvement,Also has rows under EDU; rolled up here.
+30001045,EDU,EEC,Early education workforce reserve,CTHRU name: EEC COVID-19 Workforce and Support Reserve.
+30002000,EDU,EEC,Child care resource & referral,
+30003060,EDU,EEC,Child care for DCF & TANF families,Also has rows under DSS; rolled up here.
+30004060,EDU,EEC,Income-eligible child care,
+30005000,EDU,EEC,Head Start grants,
+30007000,EDU,EEC,Children's Trust newborn programs,
+40000000,EHS,EHS,Human services transportation,
+40000054,EHS,EHS,Behavioral health workforce supports,"Also has rows under DMH, DPH, HCF, HPC, RGT; rolled up here. Fund: Behavioral Health Trust Fund."
+40000103,EHS,EHS,EOHHS core administration,Internal service fund (intragovernmental). Fund: Intragovernmental Services Fund.
+40000300,EHS,EHS,MassHealth administration,"Also has rows under AGO, DMR, DOR, DPH, ELD, EPS, GOV, HCF, ORI, WEL; rolled up here."
+40000320,EHS,EHS,MassHealth recoveries,CTHRU name: Prior year collections from liens/estate ...
+40000321,EHS,EHS,MassHealth contingency contracts,
+40000430,EHS,EHS,MassHealth CommonHealth,Coverage for adults and children with disabilities.
+40000500,EHS,EHS,MassHealth managed care,
+40000601,EHS,EHS,MassHealth senior care,
+40000641,EHS,EHS,MassHealth nursing home supplemental rates,
+40000700,EHS,EHS,MassHealth fee-for-service plan,"CTHRU name: Indemnity / Third Party Liability Plan. Also has rows under AGO, DMH, DOR, DPH, DYS, ELD, EPS, HCF, MRC, POL; rolled up here."
+40000875,EHS,EHS,Breast & cervical cancer treatment,
+40000880,EHS,EHS,MassHealth Family Assistance,
+40000885,EHS,EHS,Small business employee premium assistance,
+40000940,EHS,EHS,MassHealth ACA expansion adults,
+40000950,EHS,EHS,Children's Behavioral Health Initiative,Also has rows under DMH; rolled up here.
+40000990,EHS,EHS,Children's Medical Security Plan,
+40001111,EHS,EHS,Fiscally strained hospitals (4000-1111),Fund: Federal COVID-19 Response Fund.
+40001202,EHS,EHS,Fiscally strained hospitals,
+40001420,EHS,EHS,Medicare Part D clawback,Required payment to the federal government for MassHealth members also on Medicare.
+40001426,EHS,EHS,MassHealth brain injury & mobility waivers,"CTHRU name truncated: MassHealth Acquired Brain Injury and Mov... Also has rows under DMR, MRC, WEL; rolled up here."
+40001700,EHS,EHS,HHS information technology,"Also has rows under AGO, DMH, DMR, DPH, DSS, MCB, WEL; rolled up here."
+40001701,EHS,EHS,HHS information technology (chargeback),Intragovernmental. Fund: Intragovernmental Services Fund.
+40001998,EHS,EHS,Fiscally strained community health centers,
+41000060,HCF,HCF,CHIA operations,CTHRU name: Division of Health Care Finance and ... Also has rows under EHS; rolled up here.
+41102000,EHS,MCB,Turning 22 (Commission for the Blind),
+41202000,EHS,MRC,Vocational rehabilitation,"Also has rows under AGO, EOL; rolled up here."
+41206000,EHS,MRC,Brain injury services (MRC),Also has rows under DPH; rolled up here.
+41800100,VET,CHE,Veterans' Home at Chelsea,"Also has rows under DCP, VET; rolled up here."
+41900100,VET,HLY,Veterans' Home at Holyoke,Also has rows under VET; rolled up here.
+42000100,EHS,DYS,Youth services community programs,"CTHRU name: Non-residential services for committed ... Also has rows under DMH, DSS; rolled up here."
+42000200,EHS,DYS,Youth services detention,
+42000300,EHS,DYS,Youth services residential (committed),"Also has rows under DCP, DMH, EPS, POL; rolled up here."
+44001000,EHS,WEL,DTA administration,"Also has rows under AGO, CHS, DOE, DPH, EHS, TRE; rolled up here."
+44001004,EHS,WEL,Healthy Incentives Program,
+44001033,EHS,WEL,EBT card replacement,
+44001100,EHS,WEL,DTA caseworkers,
+44011000,EHS,WEL,DTA employment & training,"Also has rows under MRC, ORI; rolled up here."
+44032000,EHS,WEL,Cash assistance for families (TAFDC),
+44052000,EHS,WEL,State supplement to SSI,CTHRU name: Direct Old Age Assistance. Also has rows under EHS; rolled up here.
+44081000,EHS,WEL,Emergency aid to elderly & disabled (EAEDC),Also has rows under CME; rolled up here.
+45100100,EHS,DPH,Public health administration,
+45100108,EHS,DPH,State pharmacy services,Internal service fund (intragovernmental). Fund: Intragovernmental Services Fund.
+45120103,EHS,DPH,HIV/AIDS programs,"Also has rows under CHS, DOC; rolled up here."
+45120200,EHS,DPH,Substance use treatment services,"CTHRU name: Division of Alcoholism Administration ... Also has rows under ANF, CHS, DMH, DOC, DYS, EHS, MCD, MRC, OCD, PAR; rolled up here."
+45131005,EHS,DPH,Family planning & adolescent health,Also has rows under DOE; rolled up here.
+45131012,EHS,DPH,WIC infant formula,CTHRU name: Infant formula price enhancement.
+45131020,EHS,DPH,Early Intervention,Also has rows under CHS; rolled up here.
+45131136,EHS,DPH,Sexual assault & domestic violence services,Also has rows under TRC; rolled up here.
+45161000,EHS,DPH,State public health laboratory,Also has rows under EHS; rolled up here.
+45900250,EHS,DPH,School-based health programs,
+45900912,EHS,DPH,Western Mass Hospital,
+45900915,EHS,DPH,Public health hospitals,"Also has rows under AGO, DOC; rolled up here."
+45900918,EHS,DPH,State pharmacy services for Correction,
+48000015,EHS,DSS,DCF administration,"Also has rows under AGO, CHS, MCD; rolled up here."
+48000030,EHS,DSS,DCF regional administration,
+48000038,EHS,DSS,DCF services for children & families,"Also has rows under DMH, DYS, EEC, EHS, EPS, POL; rolled up here."
+48000040,EHS,DSS,Family support & stabilization,
+48000041,EHS,DSS,DCF congregate care,"Also has rows under DMR, DPH, DYS, EDU, EHS; rolled up here."
+48000200,EHS,DSS,DCF family resource centers,
+48001100,EHS,DSS,DCF social workers,
+50110100,EHS,DMH,DMH administration,Also has rows under DMR; rolled up here.
+50425000,EHS,DMH,Child & adolescent mental health services,"Also has rows under DMR, DPH, DSS, EEC; rolled up here."
+50460000,EHS,DMH,Adult mental health services,"Also has rows under AGO, DMR, DPH, EHS, ELD, MHL, OCD, POL, RCC, VET; rolled up here."
+50462000,EHS,DMH,Homeless mental health services,
+50470001,EHS,DMH,Emergency & acute mental health care,"Also has rows under DMR, EHS, OCD; rolled up here."
+50950015,EHS,DMH,State psychiatric hospitals,Also has rows under DPH; rolled up here.
+59111003,EHS,DMR,DDS administration,"Also has rows under CHS, DCP; rolled up here."
+59112000,EHS,DMR,DDS transportation,
+59202000,EHS,DMR,DDS residential & day services,"Also has rows under DMH, DPH, MRC; rolled up here."
+59202010,EHS,DMR,DDS state-operated community residences,"Also has rows under AGO, DPH, EHS; rolled up here."
+59202025,EHS,DMR,DDS day & work programs,Also has rows under DOC; rolled up here.
+59203000,EHS,DMR,DDS respite & family supports,
+59203020,EHS,DMR,DDS autism services,"Also has rows under DMH, EHS; rolled up here."
+59205000,EHS,DMR,DDS Turning 22 services,
+59301000,EHS,DMR,DDS state facilities,"Also has rows under DPH, EHS; rolled up here."
+70009401,BLC,BLC,Regional library systems,
+70009501,BLC,BLC,State aid to public libraries,
+70020012,LWD,EOL,Youth summer jobs,Also has rows under EDU; rolled up here.
+70030101,LWD,EOL,Labor shared services,
+70030500,LWD,EOL,Department of Industrial Accidents,
+70040099,HLC,OCD,Housing administration,
+70040100,HLC,OCD,Homeless programs administration,Also has rows under AGO; rolled up here.
+70040101,HLC,OCD,Emergency family shelter,"Also has rows under DPH, DSS, ORI; rolled up here."
+70040102,HLC,OCD,Homeless individuals shelters,
+70040108,HLC,OCD,HomeBASE housing assistance,CTHRU name: MA shortterm housing trans. Prog.
+70049005,HLC,OCD,Public housing subsidies,
+70049024,HLC,OCD,Mass Rental Voucher Program,
+70049030,HLC,OCD,Transitional rental assistance,
+70049033,HLC,OCD,Chapter 707 rental assistance,
+70049316,HLC,OCD,Rental assistance for families (RAFT),CTHRU name: Homeless Housing Pilot Project.
+70060010,EED,DOB,Division of Banks,"Also has rows under EED, SCA; rolled up here."
+70060142,EED,REG,Public safety & inspections,"Also has rows under CDA, SCA; rolled up here."
+70081116,EED,MMP,Local economic development earmarks,Also has rows under DCR; rolled up here.
+70091700,EDU,EDU,Education information technology,"Also has rows under EEC, GOV, RGT; rolled up here."
+70100012,EDU,DOE,METCO program,CTHRU name: Racial imbalance programs.
+70350002,EDU,DOE,Adult basic education,"Also has rows under BSD, DOC, EOL, EPS, HSD, SDB, SDC, SDE, SDF, SDH, SDM, SDN, SDP, SDS, SDW; rolled up here."
+70350006,EDU,DOE,Regional school transportation,
+70350008,EDU,DOE,Homeless student transportation,
+70531925,EDU,DOE,School breakfast program,
+70610008,EDU,DOE,Chapter 70 school aid,Appropriated to DESE; payments are recorded under the Department of Revenue. Also has rows under DOR; rolled up here.
+70610012,EDU,DOE,Special education circuit breaker,"CTHRU name: Non-educational cost of residential ... Also has rows under DMR, EDU, IGO; rolled up here."
+70619010,EDU,DOE,Charter school reimbursement,Also has rows under DOR; rolled up here.
+70619400,EDU,DOE,MCAS student testing,
+70619813,EDU,DOE,Rural school aid,
+70700065,EDU,RGT,State scholarship program,"Also has rows under DOE, EDU; rolled up here."
+71000200,EDU,UMS,UMass operating support,
+71090100,EDU,BSC,Bridgewater State University,
+71100100,EDU,FSC,Fitchburg State University,
+71120100,EDU,FRC,Framingham State University,
+71130100,EDU,NAC,Mass College of Liberal Arts,
+71140100,EDU,SSA,Salem State University,
+71150100,EDU,WSC,Westfield State University,
+71160100,EDU,WOR,Worcester State University,
+71170100,EDU,MCA,MassArt,
+71180100,EDU,MMA,Mass Maritime Academy,Also has rows under DFS; rolled up here.
+75030100,EDU,BRC,Bristol Community College,
+75040100,EDU,CCC,Cape Cod Community College,
+75060100,EDU,HCC,Holyoke Community College,
+75070100,EDU,MBC,MassBay Community College,
+75080100,EDU,MAS,Massasoit Community College,
+75090100,EDU,MWC,Mount Wachusett Community College,
+75100100,EDU,NEC,Northern Essex Community College,
+75110100,EDU,NSC,North Shore Community College,
+75120100,EDU,QCC,Quinsigamond Community College,
+75140100,EDU,STC,Springfield Technical Community College,
+75160100,EDU,MCC,Middlesex Community College,
+75180100,EDU,BHC,Bunker Hill Community College,
+80000105,EPS,CME,Chief Medical Examiner,Also has rows under POL; rolled up here.
+80001700,EPS,EPS,Public safety information technology,"Also has rows under CME, DOC, POL; rolled up here."
+81000002,EPS,POL,State Police details (chargeback),Internal service fund (intragovernmental). Fund: Intragovernmental Services Fund.
+81000006,EPS,POL,State Police private details,Also has rows under CJT; rolled up here.
+81000102,EPS,POL,State Police at Logan Airport (Troop F),
+81001001,EPS,POL,State Police operations,"Also has rows under AGO, DOC, EPS, SDS; rolled up here."
+81001004,EPS,POL,State Police crime laboratory,
+82000200,EPS,CJT,Municipal police training,"Also has rows under DFS, EPS, NEC, PST, SDP; rolled up here."
+83240000,EPS,DFS,Department of Fire Services,"Also has rows under AGO, CDA, DCP, DOC; rolled up here."
+89000001,EPS,DOC,State prisons (Department of Correction),"Also has rows under AGO, CJT, DOT, EPS, TRC; rolled up here."
+89000002,EPS,DOC,Mass Alcohol & Substance Abuse Center,CTHRU name: MASAC.
+89100102,SHF,SDH,Hampden Sheriff operations,Also has rows under SDB; rolled up here.
+89100103,SHF,SDH,Hampden Sheriff payroll,
+89100105,SHF,SDW,Worcester Sheriff operations,"Also has rows under DCP, SDB; rolled up here."
+89100106,SHF,SDW,Worcester Sheriff payroll,
+89100107,SHF,SDM,Middlesex Sheriff operations,
+89100108,SHF,SDF,Franklin Sheriff operations,
+89100111,SHF,HSD,Hampshire Sheriff payroll,
+89100146,SHF,SDB,Berkshire Sheriff payroll,
+89100201,SHF,SDC,Barnstable Sheriff payroll,
+89100601,SHF,SDN,Norfolk Sheriff payroll,
+89100619,SHF,SDE,Essex Sheriff operations,"Also has rows under AGO, NEC; rolled up here."
+89100620,SHF,SDE,Essex Sheriff payroll,
+89100701,SHF,SDP,Plymouth Sheriff payroll,
+89101013,SHF,SDM,Middlesex Sheriff payroll,
+89101021,SHF,SDF,Franklin Sheriff payroll,
+89108200,SHF,SDC,Barnstable Sheriff operations,Also has rows under CCC; rolled up here.
+89108300,SHF,BSD,Bristol Sheriff operations,
+89108301,SHF,BSD,Bristol Sheriff payroll,
+89108600,SHF,SDN,Norfolk Sheriff operations,
+89108700,SHF,SDP,Plymouth Sheriff operations,Also has rows under DCP; rolled up here.
+89108800,SHF,SDS,Suffolk Sheriff operations,
+89108802,SHF,SDS,Suffolk Sheriff payroll,
+89500001,EPS,PAR,Parole Board,"Also has rows under AGO, BSD, DOC, EPS, SDE; rolled up here."
+91100100,EHS,ELD,Elder Affairs administration,
+91100600,EHS,ELD,Elder Community Choices program,
+91101630,EHS,ELD,Elder home care services,
+91101633,EHS,ELD,Elder home care administration,Also has rows under CHS; rolled up here.
+91101636,EHS,ELD,Elder protective services,
+91109002,EHS,ELD,Grants to councils on aging,
+95000000,LEG,SEN,Senate,"Also has rows under AGO, DCP; rolled up here."
+96000000,LEG,HOU,House of Representatives,

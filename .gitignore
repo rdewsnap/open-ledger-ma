@@ -1,0 +1,12 @@
+node_modules/
+dist/
+etl/raw/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.wrangler/
+.internal/
+.claude/
+.playwright-mcp/
