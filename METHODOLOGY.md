@@ -154,21 +154,17 @@ where any specific dollar went. These links are marked `proportional: true` in `
 (Some revenue is in fact dedicated by law, such as the income surtax for the Education and
 Transportation Fund; the allocation does not reflect that.)
 
-## Conservation lines overlay
+## Highlight lens
 
-The "Conservation lines" toggle highlights (`conservation: true` in the data):
+The **Highlight** control lets a reader pick any secretariats or departments and see them
+highlighted across the Flow, Scale and Changes views, with a subtotal. The selection lives in
+the page URL (`?hl=sec:EEA,dept:EHS/DMH`) so a highlighted view can be shared. The site ships no
+preset selections and takes no position on what should be highlighted.
 
-- the whole **Energy & Environmental Affairs** secretariat (CTHRU `ENVIRONMENTAL AFFAIRS`) and
-  everything under it, and
-- the **Department of Conservation & Recreation** (department code `DCR`) and the
-  **Department of Fish & Game** (department code `FWE`, which includes the Division of
-  Fisheries & Wildlife) wherever they appear.
-
-In FY2024–FY2027 both `DCR` and `FWE` sit inside the Energy & Environmental Affairs secretariat,
-so the overlay equals that secretariat. Environment-related accounts whose home is another
-secretariat (for example 1599-2031 "Environmental infrastructure", budgeted under
-Administration & Finance) are not included. The rule is mechanical and does not judge what
-counts as conservation.
+The data files carry one derived flag, `conservation: true`, on the Energy & Environmental
+Affairs secretariat (CTHRU `ENVIRONMENTAL AFFAIRS`) and on the Department of Conservation &
+Recreation (`DCR`) and the Department of Fish & Game (`FWE`). It is a mechanical label kept for
+anyone reusing the data; the site's interface does not read it.
 
 ## Known limitations
 

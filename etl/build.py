@@ -324,7 +324,7 @@ def program_index(tree: dict[str, Any]) -> dict[str, dict[str, Any]]:
     out = {}
     for sec, dept, prog in iter_programs(tree):
         out[prog["id"]] = {"name": prog["name"], "path": f"{sec['name']} › {dept['name']}",
-                           "code": prog.get("code"), "enacted": prog["enacted"], "actual": prog["actual"],
+                           "secId": sec["id"], "deptId": dept["id"], "code": prog.get("code"), "enacted": prog["enacted"], "actual": prog["actual"],
                            "conservation": bool(prog.get("conservation"))}
     return out
 
@@ -343,7 +343,8 @@ def build_diff(a: int, b: int, tree_a: dict[str, Any], tree_b: dict[str, Any]) -
         ref = pb or pa
         ea, eb = (pa or {}).get("enacted", 0), (pb or {}).get("enacted", 0)
         aa, ab = (pa or {}).get("actual", 0), (pb or {}).get("actual", 0)
-        row = {"id": pid, "name": ref["name"], "path": ref["path"]}
+        row = {"id": pid, "name": ref["name"], "path": ref["path"],
+               "secId": ref["secId"], "deptId": ref["deptId"]}
         if ref.get("code"):
             row["code"] = ref["code"]
         row.update({"enactedA": ea, "enactedB": eb, "actualA": aa, "actualB": ab,

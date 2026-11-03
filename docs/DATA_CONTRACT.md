@@ -74,7 +74,7 @@ type Node = {
 ```
 ### `data/diff/fy{A}_fy{B}.json`
 ```ts
-{ a: 2026, b: 2027, rows: { id, name, path: string /* "Sec › Dept" */, code?,
+{ a: 2026, b: 2027, rows: { id, name, path: string /* "Sec › Dept" */, secId: string, deptId: string, code?,
     enactedA, enactedB, actualA, actualB, dEnacted, dActual, pctEnacted: number|null, pctActual: number|null,
     conservation?: true }[] }
 // one row per program node (incl. Other buckets). Programs present in only one year get 0 for the missing year.

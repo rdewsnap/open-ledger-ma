@@ -1,0 +1,148 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-paper: #f7f3ea;
+  --color-paper-2: #efe9dc;
+  --color-rule: #d9d1c2;
+  --color-ink: #2b2824;
+  --color-ink-2: #6b655c;
+  --color-clay: #b5542d;
+  --color-clay-2: #e8c9b8;
+  --color-moss: #5f7a5b;
+  --color-slate: #4a5a6a;
+  --color-sand-1: #c9a27e;
+  --color-sand-2: #d9be9c;
+  --color-sand-3: #e6d3b8;
+
+  --font-display: 'Fraunces Variable', Georgia, serif;
+  --font-sans: 'Inter Variable', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --radius-card: 14px;
+  --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.55;
+    font-feature-settings: 'ss01', 'cv11';
+    background: var(--color-paper);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-weight: 560;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  a {
+    color: var(--color-clay);
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-clay);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: var(--color-clay-2);
+  }
+}
+
+@layer components {
+  /* Faint paper grain over the whole page; purely decorative. */
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+  .grain::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.04;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.17 0 0 0 0 0.16 0 0 0 0 0.14 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'zero' 0;
+    letter-spacing: -0.01em;
+  }
+
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--color-ink-2);
+  }
+
+  .hairline {
+    border-color: var(--color-rule);
+  }
+
+  /* Segmented pill control (year picker, measure toggle). */
+  .seg {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--color-rule);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-paper-2) 55%, transparent);
+  }
+  .seg > button,
+  .seg > a {
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-ink-2);
+    transition:
+      background-color 220ms var(--ease-out-soft),
+      color 220ms var(--ease-out-soft);
+    white-space: nowrap;
+  }
+  .seg > button:hover {
+    color: var(--color-ink);
+  }
+  .seg > [aria-pressed='true'],
+  .seg > [aria-checked='true'] {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    box-shadow: inset 0 0 0 1px var(--color-rule);
+  }
+
+  .svg-label {
+    paint-order: stroke;
+    stroke: var(--color-paper);
+    stroke-width: 3.5px;
+    stroke-linejoin: round;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
