@@ -240,7 +240,7 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label, focu
       <p className="mt-2 text-[0.85rem] text-ink-2">
         {focus
           ? `${focusName ?? 'This area'}’s largest programs, drawn to scale. Tap one for its breakdown.`
-          : 'Tap a spending area to see its programs, or a revenue source for what it pays for. Band widths are to scale.'}
+          : 'Tap a spending area to see its programs, or a revenue source for its share of each area. Spending bands are to scale; revenue bands show shares.'}
       </p>
     </div>
   );

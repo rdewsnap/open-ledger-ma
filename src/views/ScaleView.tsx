@@ -130,15 +130,17 @@ export function ScaleView() {
         </>
       ) : partial ? (
         <>
-          So far in {fyLong(year)} the state has spent {amt}
+          So far in {fyLong(year)} the state has spent {amt}, about{' '}
+          {monthsInto(year, partial.through)} into a year that runs to {longDate(`${year}-06-30`)}.
           {treeData ? (
             <>
               {' '}
-              of its <span className="num text-ink">{formatMoney(treeData.enacted)}</span> budget
+              The budget for the year is{' '}
+              <span className="num text-ink">{formatMoney(treeData.enacted)}</span>; spending also
+              includes payments made outside it, such as pensions, so the two are not a measure of how
+              much budget is left.
             </>
           ) : null}
-          , about {monthsInto(year, partial.through)} into a year that runs to{' '}
-          {longDate(`${year}-06-30`)}.
         </>
       ) : (
         <>

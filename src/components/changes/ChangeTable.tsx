@@ -15,12 +15,14 @@ type Props = {
   sortDir: SortDir;
   highlighting: boolean;
   rowsHref: (account: string) => string;
+  /** The later year is still in progress: $0 there reads "none yet", not a cut to zero. */
+  open?: boolean;
 };
 
 const ariaSort = (active: boolean, dir: SortDir) => (active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined);
 
 /** Desktop: one row per program with an inline diverging bar. */
-export function ChangeTable({ rows, max, labelA, labelB, sortKey, sortDir, highlighting, rowsHref }: Props) {
+export function ChangeTable({ rows, max, labelA, labelB, sortKey, sortDir, highlighting, rowsHref, open = false }: Props) {
   return (
     <table className="mt-3 w-full table-fixed border-collapse text-[0.95rem]">
       <colgroup>
@@ -61,7 +63,7 @@ export function ChangeTable({ rows, max, labelA, labelB, sortKey, sortDir, highl
             <td className="num py-2 text-right text-ink-2">{formatMoney(r.a)}</td>
             <td className="num py-2 text-right text-ink">{formatMoney(r.b)}</td>
             <td className="num py-2 text-right text-ink">{formatMoneyChange(r.delta)}</td>
-            <td className="num py-2 text-right text-ink-2">{pctText(r)}</td>
+            <td className="num py-2 text-right text-ink-2">{pctText(r, open)}</td>
             <td className="py-2 pl-4 align-middle">
               <DiffBar delta={r.delta} max={max} highlighted={r.highlighted} highlighting={highlighting} />
             </td>

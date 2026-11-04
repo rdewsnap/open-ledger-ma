@@ -10,10 +10,12 @@ type Props = {
   max: number;
   highlighting: boolean;
   rowsHref: (account: string) => string;
+  /** The later year is still in progress: $0 there reads "none yet", not a cut to zero. */
+  open?: boolean;
 };
 
 /** Phone: one line per program, then "$A → $B · +$X (+Y%)", then a thin bar. */
-export function ChangeList({ rows, max, highlighting, rowsHref }: Props) {
+export function ChangeList({ rows, max, highlighting, rowsHref, open = false }: Props) {
   return (
     <ul className="mt-3 border-t border-rule">
       {rows.map((r) => (
@@ -31,7 +33,7 @@ export function ChangeList({ rows, max, highlighting, rowsHref }: Props) {
           </p>
           <p className="num mt-0.5 text-[0.875rem] text-ink-2">
             {formatMoney(r.a)} → {formatMoney(r.b)} <span aria-hidden="true">·</span>{' '}
-            <span className="text-ink">{formatMoneyChange(r.delta)}</span> ({pctText(r)})
+            <span className="text-ink">{formatMoneyChange(r.delta)}</span> ({pctText(r, open)})
           </p>
           <div className="mt-1.5">
             <DiffBar delta={r.delta} max={max} highlighted={r.highlighted} highlighting={highlighting} thin />

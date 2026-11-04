@@ -19,6 +19,10 @@ import { useAsync } from '../state/useAsync';
 /** Spending areas under this share of the total fold into "Smaller offices" on phones. */
 const PHONE_MIN_SEC = 0.016;
 
+/** Partial years: revenue arrives unevenly, so the early mix by source is not the full-year mix. */
+const TIMING_NOTE =
+  ' Some revenue arrives in bursts (tax payments in April, transfers late in the year), so the mix by source will shift as the year goes on.';
+
 export function FlowView() {
   const { meta, year, partial } = useMeta();
   const { hl, measure, setMeasure, setHighlight } = useLedgerParams();
@@ -133,7 +137,7 @@ export function FlowView() {
           For {fyLong(year)}, the Legislature budgeted{' '}
           <span className="num text-ink">{sp}</span>. The state{' '}
           {partial ? 'has taken in' : 'took in'} <span className="num text-ink">{rev}</span>
-          {partial ? revSoFar : ''}.
+          {partial ? revSoFar : ''}.{partial ? TIMING_NOTE : null}
         </>
       );
     }
@@ -147,7 +151,7 @@ export function FlowView() {
         {partial.revenueThrough
           ? ` and ${monthsInto(year, partial.revenueThrough)} of revenue (through ${longDate(partial.revenueThrough)})`
           : ''}
-        .
+        .{TIMING_NOTE}
       </>
     ) : (
       <>
@@ -228,7 +232,7 @@ export function FlowView() {
             <span aria-hidden="true" className="text-ink-2/60">
               ·
             </span>
-            <span>band widths are to scale</span>
+            <span>spending bands are to scale; revenue bands show each source’s share</span>
             {/* Its own line, so a separator dot never ends a wrapped line. */}
             <span className="basis-full">
               The two totals are counted differently, so the gap is not a surplus or deficit (
@@ -310,8 +314,10 @@ export function FlowView() {
         {wide
           ? ', then the largest programs (single budget line items)'
           : '. On a phone the chart shows one step at a time; tap a spending area to see its programs'}
-        . Band widths are drawn to scale. The state pools its revenue, so the bands from each source show
-        its share of the pool, not where its own dollars went.
+        . Spending bands are drawn to scale. Revenue bands are sized by each source’s share of
+        revenue and then stretched to match the spending total, so a revenue band’s width does not equal its
+        dollar amount. The state pools its revenue, so the bands from each source show its share of the
+        pool, not where its own dollars went.
       </p>
 
       <SourceStrip showRevenue />

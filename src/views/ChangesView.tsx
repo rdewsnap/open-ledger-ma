@@ -18,7 +18,7 @@ import {
   toChangeRows,
   type SortKey,
 } from '../lib/diff';
-import { formatMoney, fyLong, fyShort, longDate, monthsInto } from '../lib/format';
+import { formatMoney, formatPercentChange, fyLong, fyShort, longDate, monthsInto } from '../lib/format';
 import type { Measure } from '../lib/types';
 import { useMediaQuery } from '../state/media';
 import { useMeta } from '../state/meta';
@@ -200,6 +200,19 @@ export function ChangesView() {
         </p>
       ) : null}
 
+      {partialB && measure === 'enacted' && tA && tB && tA.enacted > tA.gaa ? (
+        <p className="mt-4 rounded-[8px] border border-brick/30 bg-brick-2/30 px-3 py-2 text-[0.9rem] text-ink">
+          <strong className="font-semibold">{fyShort(to)} has only its original budget so far.</strong>{' '}
+          {fyShort(from)}’s figure includes{' '}
+          <span className="num">{formatMoney(tA.enacted - tA.gaa)}</span> of supplemental budgets
+          passed during the year. Original budget to original budget, the total went from{' '}
+          <span className="num">{formatMoney(tA.gaa)}</span> to{' '}
+          <span className="num">{formatMoney(tB.gaa)}</span> (
+          <span className="num">{formatPercentChange((tB.gaa - tA.gaa) / tA.gaa)}</span>). Programs
+          marked “none yet” may still be funded by a later supplemental budget.
+        </p>
+      ) : null}
+
       {/* Drawn (invisibly, with zeros) while loading so the controls below do not jump. */}
       <div
         className={diff.status === 'ready' ? '' : 'invisible'}
@@ -211,6 +224,7 @@ export function ChangesView() {
           labelA={labelA}
           labelB={labelB}
           filtered={diff.status === 'ready' && filtered.length !== rows.length}
+          open={!!partialB}
         />
       </div>
 
@@ -273,9 +287,10 @@ export function ChangesView() {
             sortDir={sortDir}
             highlighting={highlighting}
             rowsHref={rowsHref}
+            open={!!partialB}
           />
         ) : (
-          <ChangeList rows={visible} max={max} highlighting={highlighting} rowsHref={rowsHref} />
+          <ChangeList rows={visible} max={max} highlighting={highlighting} rowsHref={rowsHref} open={!!partialB} />
         )}
         {sorted.length > limit ? (
           <div className="mt-4 flex items-center justify-center gap-3">
@@ -298,7 +313,9 @@ export function ChangesView() {
         <span className="font-semibold text-ink">How to read this.</span> Bars run right for
         increases and left for decreases, scaled to the largest change in the list.{' '}
         {measure === 'enacted' ? 'Budgeted' : spentB} amounts; “new” means the program had $0 in{' '}
-        {fyLong(from)}. Rows named “Other …” add together a department’s smaller line items; the tag says how many.
+        {fyLong(from)}
+        {partialB ? <>; “none yet” means it has $0 so far in {fyLong(to)}</> : null}. Amounts are in
+        dollars of each year, not adjusted for inflation. Rows named “Other …” add together a department’s smaller line items; the tag says how many.
       </p>
 
       <SourceStrip years={[from, to]} />

@@ -20,8 +20,8 @@ export function OverBudgetNote({ tree, measure, partial }: Props) {
       That is <span className="num text-ink">{formatMoney(tree.actual - tree.enacted)}</span> more
       than the <span className="num text-ink">{formatMoney(tree.enacted)}</span> budget. Most of
       the difference is spending allowed outside the budget, such as pension payments set by
-      other laws; some programs, like MassHealth, also ran over and are usually covered by a later
-      supplemental budget.{' '}
+      other laws. Some programs, like MassHealth, also spent more than their budget line, including
+      any supplemental budgets recorded so far.{' '}
       <Link to="/methodology#why-spent-can-be-larger-than-budgeted">Why spending is higher</Link>
     </>
   );

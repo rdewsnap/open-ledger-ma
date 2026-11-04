@@ -174,6 +174,9 @@ program. The Flow view's bands from revenue sources to spending areas are a **pr
 allocation**: each spending area's total is split across revenue groups in proportion to each
 group's share of total budgeted-fund collections that year. They show the overall mix, not
 where any specific dollar went. These links are marked `proportional: true` in `flows.json`.
+Because the revenue column is split to fill the spending total, a revenue band's width shows its
+share, not its dollar amount; when collections and spending differ (always, and most of all in a
+year still in progress), the revenue column is stretched or squeezed to match.
 (Some revenue is in fact dedicated by law, such as the income surtax for the Education and
 Transportation Fund; the allocation does not reflect that.)
 
@@ -194,7 +197,14 @@ anyone reusing the data; the site's interface does not read it.
 - **FY2027 is in progress.** Spending covers activity recorded through the date shown in
   `meta.json` (`partial.2027.through`); revenue for FY2027 covers fiscal periods through
   September 2026 (`partial.2027.revenueThrough`). Year-over-year comparisons with FY2027
-  compare a partial year with full years.
+  compare a partial year with full years. FY2027 revenue so far also has a different mix by
+  source than a full year, because some revenue (April income tax payments, many fund transfers)
+  arrives late in the year.
+- **Budget comparisons with a year in progress.** A closed year's "Budgeted" figure includes the
+  supplemental budgets passed during it; FY2027 so far has only its original GAA. The Changes view
+  says so and gives the GAA-to-GAA change, and marks programs with $0 so far as "none yet"
+  rather than "ended".
+- **Amounts are nominal.** All figures are in dollars of each year, not adjusted for inflation.
 - **Closed years can still move slightly.** CTHRU is updated daily; late adjustments to FY2026
   can change totals after the fact. Re-running `make pull FORCE=1 build` picks them up.
 - **Supplemental budgets** are included in "Budgeted" when CTHRU has recorded them. Supplemental

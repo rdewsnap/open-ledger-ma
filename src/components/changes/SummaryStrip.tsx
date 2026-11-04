@@ -9,6 +9,8 @@ type Props = {
   labelA: string;
   labelB: string;
   filtered: boolean;
+  /** The later year is still in progress: count $0 rows as "none yet", not "ended". */
+  open?: boolean;
 };
 
 function Stat({
@@ -31,7 +33,7 @@ function Stat({
 const pct = (s: ChangeSummary) => (s.pct === null ? '' : ` (${formatPercentChange(s.pct)})`);
 
 /** Totals for the programs in view, and how many moved each way. */
-export function SummaryStrip({ all, highlighted, labelA, labelB, filtered }: Props) {
+export function SummaryStrip({ all, highlighted, labelA, labelB, filtered, open = false }: Props) {
   return (
     <section
       aria-label="Summary"
@@ -63,7 +65,7 @@ export function SummaryStrip({ all, highlighted, labelA, labelB, filtered }: Pro
             <span aria-hidden="true" className="px-1 text-ink-2/60">
               ·
             </span>
-            <span className="num text-ink">{all.ended}</span> ended
+            <span className="num text-ink">{all.ended}</span> {open ? 'none yet' : 'ended'}
           </dd>
         </div>
       </dl>
