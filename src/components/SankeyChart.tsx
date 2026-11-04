@@ -30,6 +30,8 @@ type Props = {
   onSelect: (id: string | null) => void;
   spendWord: string; // "spending" / "budgeted spending"
   label: string; // aria label for the chart
+  /** Draw at `width` but display at this width (phones show the desktop chart shrunk to fit). */
+  displayWidth?: number;
 };
 
 function truncate(s: string, px: number, charPx: number) {
@@ -37,7 +39,8 @@ function truncate(s: string, px: number, charPx: number) {
   return s.length <= max ? s : `${s.slice(0, max - 1).trimEnd()}…`;
 }
 
-export function SankeyChart({ model, width, highlighting, focus, onFocus, selected, onSelect, spendWord, label }: Props) {
+export function SankeyChart({ model, width, highlighting, focus, onFocus, selected, onSelect, spendWord, label, displayWidth }: Props) {
+  const k = displayWidth ? displayWidth / width : 1;
   const [hover, setHover] = useState<{ kind: 'node' | 'link'; id: string } | null>(null);
   const [tip, setTip] = useState<{ data: TipData; x: number; y: number } | null>(null);
   const [kbFocus, setKbFocus] = useState<string | null>(null);
@@ -231,7 +234,7 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, select
   };
 
   const showNodeTipAt = (n: N) =>
-    setTip({ data: nodeTip(n), x: n.kind === 'revenue' ? (n.x0 ?? 0) - 4 : (n.x1 ?? 0) + 4, y: ((n.y0 ?? 0) + (n.y1 ?? 0)) / 2 });
+    setTip({ data: nodeTip(n), x: (n.kind === 'revenue' ? (n.x0 ?? 0) - 4 : (n.x1 ?? 0) + 4) * k, y: (((n.y0 ?? 0) + (n.y1 ?? 0)) / 2) * k });
 
   const revenueX1 = layout.nodes.find((n) => n.kind === 'revenue')?.x1 ?? labelL;
   const secX0 = layout.nodes.find((n) => n.kind === 'secretariat')?.x0 ?? width / 2;
@@ -242,8 +245,8 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, select
   return (
     <div className="relative" onMouseLeave={() => { setHover(null); setTip(null); }}>
       <svg
-        width={width}
-        height={layout.height}
+        width={width * k}
+        height={layout.height * k}
         viewBox={`0 0 ${width} ${layout.height}`}
         role="group"
         aria-label={label}
@@ -386,7 +389,7 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, select
           })}
         </g>
       </svg>
-      {tip ? <Tooltip id="flow-tip" tip={tip.data} x={tip.x} y={tip.y} containerWidth={width} /> : null}
+      {tip ? <Tooltip id="flow-tip" tip={tip.data} x={tip.x} y={tip.y} containerWidth={width * k} /> : null}
     </div>
   );
 }
