@@ -291,6 +291,12 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
           {kind === 'revenue' ? 'collected' : measureLabel.toLowerCase()} in {fyLong(year)} · {shareLine}
         </span>
       </p>
+      {kind === 'secretariat' ? (
+        <p className="mt-2 max-w-[62ch] text-[0.85rem] text-ink-2">
+          Operating budget only. Bond-funded capital spending, like construction and land purchases,
+          is not included (<Link to="/methodology#known-limitations">why</Link>).
+        </p>
+      ) : null}
       <div className="mt-6 grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-2">{blocks}</div>
       {table}
     </section>
