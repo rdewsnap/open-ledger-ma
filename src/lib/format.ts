@@ -110,3 +110,19 @@ export function partialLabel(
   const rev = partial.revenueThrough ? `; revenue through ${longDate(partial.revenueThrough)}` : '';
   return `${fyShort(year)} ${partial.label} — spending through ${longDate(partial.through)}${rev}`;
 }
+
+const UNITS: Record<string, number> = { k: 1e3, thousand: 1e3, m: 1e6, mm: 1e6, million: 1e6, b: 1e9, bn: 1e9, billion: 1e9 };
+
+/** Reads "$65M", "65 million", "1.2b", "65,000,000" as dollars; null when it is not an amount. */
+export function parseAmount(text: string): number | null {
+  const m = text
+    .trim()
+    .toLowerCase()
+    .replace(/[$,\s]/g, '')
+    .match(/^(\d+(?:\.\d+)?|\.\d+)([a-z]*)$/);
+  if (!m) return null;
+  const unit = m[2] ? UNITS[m[2]] : 1;
+  if (unit === undefined) return null;
+  const value = Number(m[1]) * unit;
+  return value > 0 && Number.isFinite(value) ? value : null;
+}

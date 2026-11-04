@@ -18,6 +18,12 @@ Fiscal years as `"fy2027"` keys / `2027` numbers. FY runs Jul 1 – Jun 30.
 - Revenue: `kcy7-ivxi` "Commonwealth Revenue Collections". Rows = transaction-period level.
   FY2021–FY2027. Filter `fund_category_name = 'Budgeted Funds'`. Fields: `fiscal_year,
   revenue_category_name, revenue_class_name, revenue_source_name, department_name, revenue_collected`.
+- Capital: `pegc-naaa` "Comptroller of the Commonwealth Spending" (one row per payment). Filter
+  `appropriation_type like '(2CN)%'` (capital appropriations), summed by
+  `budget_fiscal_year, cabinet_secretariat, department_code` in the SoQL query, so
+  `etl/raw/capital_fy{YYYY}.csv` holds about 80 rows a year. Capital is paid from its own funds
+  (General Capital Projects, Highway Capital Projects, Federal Highway Construction), so it never
+  overlaps the spending dataset. It is shown beside the charts, never added to their totals.
 - Reference (not scraped for numbers): massbudget.org Budget Browser category tree.
 - Totals sanity (FY2026, from the API on 2026-11-03): enacted $62.22B, spent $69.80B,
   budgeted-fund revenue $73.17B. FY2027: enacted $62.58B, spent so far $22.81B.
@@ -129,5 +135,10 @@ clarifications except item 1.
 8. **Diff files** are written for every pair of loaded years (a < b). Rows are sorted by
    `|dActual|` descending; `path` uses " › " between secretariat and department names; `pct*` is
    `null` when the A value is 0.
-9. **Formatting.** JSON is written compact (no indentation) to keep files small; largest file is
+9. **meta.json `capital`** (optional): `capital[year] = { total, bySec: { "sec:EEA": n }, byDept:
+   { "dept:EEA/DCR": n } }`, whole dollars of capital payments, largest first; areas with none
+   are absent. A department sits under the secretariat it has in the spending data. Plus
+   `sources.capital` (same shape as the other sources, with `filter`). For a year in progress the
+   figure is payments so far.
+10. **Formatting.** JSON is written compact (no indentation) to keep files small; largest file is
    about 120 KB.

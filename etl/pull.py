@@ -5,7 +5,7 @@ Usage:
     python etl/pull.py --years 2027    # one year
     python etl/pull.py --force         # re-download even if cached
 
-Writes etl/raw/{spending,revenue}_fy{YYYY}.csv and records each pull in
+Writes etl/raw/{spending,revenue,capital}_fy{YYYY}.csv and records each pull in
 etl/raw/manifest.json (timestamp, row count, dataset rowsUpdatedAt).
 Set SOCRATA_APP_TOKEN in the environment to send an app token (optional).
 """
@@ -24,7 +24,7 @@ from typing import Any
 import pandas as pd
 import requests
 
-from config import DATASETS, DEFAULT_YEARS, FIELDS, RAW_DIR, Dataset, raw_path
+from config import DATASETS, DEFAULT_YEARS, FIELDS, RAW_DIR, Dataset, column_name, raw_path
 
 PAGE_SIZE = 50_000
 MANIFEST = RAW_DIR / "manifest.json"
@@ -61,7 +61,7 @@ def get_json(session: requests.Session, url: str, params: dict[str, str] | None 
 
 def fetch_year(session: requests.Session, ds: Dataset, year: int) -> pd.DataFrame:
     """Download every row of one dataset for one fiscal year via SODA paging."""
-    where = f"fiscal_year = {year}"
+    where = ds.year_where.format(year=year)
     if ds.where:
         where = f"{where} AND {ds.where}"
     fields = FIELDS[ds.key]
@@ -75,16 +75,19 @@ def fetch_year(session: requests.Session, ds: Dataset, year: int) -> pd.DataFram
             "$limit": str(PAGE_SIZE),
             "$offset": str(offset),
         }
+        if ds.group:
+            params["$group"] = ds.group
         page = get_json(session, f"{ds.resource_url}.json", params)
         rows.extend(page)
         if len(page) < PAGE_SIZE:
             break
         offset += PAGE_SIZE
     df = pd.DataFrame(rows)
-    for col in fields:  # Socrata omits null keys; keep a stable column set
+    cols = [column_name(f) for f in fields]
+    for col in cols:  # Socrata omits null keys; keep a stable column set
         if col not in df.columns:
             df[col] = None
-    return df[list(fields)]
+    return df[cols]
 
 
 def fetch_metadata(session: requests.Session, ds: Dataset) -> dict[str, Any]:
@@ -125,10 +128,14 @@ def pull(years: list[int], force: bool) -> None:
         meta.update({"id": ds.id, "resource": ds.resource_url, "page": ds.page_url,
                      "filter": ds.where or None,
                      "checked": datetime.now(timezone.utc).isoformat(timespec="seconds")})
-        manifest["datasets"][ds.key] = meta
+        todo = [y for y in years if force or not raw_path(ds.key, y).exists()]
+        # Keep the recorded metadata when nothing is re-pulled: rowsUpdatedAt dates the
+        # cached rows ("spending through"), so refreshing it alone would mislabel them.
+        if todo or ds.key not in manifest["datasets"]:
+            manifest["datasets"][ds.key] = meta
         for year in years:
             out = raw_path(ds.key, year)
-            if out.exists() and not force:
+            if year not in todo:
                 print(f"skip {out.name} (cached; --force to refresh)")
                 continue
             print(f"pull {ds.id} FY{year} ...", end=" ", flush=True)

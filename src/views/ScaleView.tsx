@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Breadcrumb } from '../components/scale/Breadcrumb';
+import { AmountInContext } from '../components/AmountInContext';
 import { HighlightCallout } from '../components/HighlightCallout';
 import { OverBudgetNote } from '../components/OverBudgetNote';
 import { ScaleList } from '../components/scale/ScaleList';
 import { Treemap } from '../components/scale/Treemap';
 import { SourceStrip } from '../components/SourceStrip';
+import { capitalFor } from '../lib/capital';
 import { DataMissingError, loadTree, usingFixture } from '../lib/data';
 import { formatMoney, formatShare, fyLong, fyShort, longDate, monthsInto, partialLabel } from '../lib/format';
 import { highlightSet } from '../lib/highlight';
@@ -29,7 +31,7 @@ const NODE_PARAM = 'node';
 type NavState = { scaleFrom?: string } | null;
 
 export function ScaleView() {
-  const { year, partial } = useMeta();
+  const { meta, year, partial } = useMeta();
   const { hl, measure, setMeasure, setHighlight } = useLedgerParams();
   const [params, setParams] = useSearchParams();
   const location = useLocation();
@@ -119,6 +121,9 @@ export function ScaleView() {
         : 'total spending';
   const yearLabel = partial ? partialLabel(year, partial) : fyLong(year);
   const hlTotal = root ? highlightTotal(root, highlight) : 0;
+  const focusCapital = focus && focus.depth > 0 ? capitalFor(meta, year, focus.data.id) : null;
+  const verb =
+    measure === 'enacted' ? `budgeted for ${fyLong(year)}` : partial ? `spent so far in ${fyLong(year)}` : `spent in ${fyLong(year)}`;
 
   const dek = (() => {
     if (!root || total <= 0) return null;
@@ -220,6 +225,15 @@ export function ScaleView() {
                   ·
                 </span>
                 <span className="num">{formatShare(focus.value ?? 0, total)}</span> of {totalLabel}
+                {focusCapital ? (
+                  <>
+                    <span aria-hidden="true" className="px-1.5 text-ink-2/60">
+                      ·
+                    </span>
+                    plus <span className="num text-ink">{formatMoney(focusCapital)}</span> capital, not
+                    drawn
+                  </>
+                ) : null}
               </p>
             ) : null}
           </>
@@ -262,11 +276,27 @@ export function ScaleView() {
         />
       ) : null}
 
+      {root && total > 0 ? (
+        <AmountInContext
+          key={focus?.data.id ?? 'root'}
+          area={focus && focus.depth > 0 ? { name: focus.data.name, amount: focus.value ?? 0, capital: focusCapital } : null}
+          total={total}
+          verb={verb}
+          totalLabel={
+            measure === 'enacted'
+              ? `the whole operating budget for ${fyLong(year)}`
+              : `all state operating spending${partial ? ' so far' : ''} in ${fyLong(year)}`
+          }
+          hint="Zoom into a spending area or department to compare with it too. Simple division: it does not say whether an amount is a lot or a little."
+        />
+      ) : null}
+
       <p className="mt-6 max-w-[70ch] text-[0.95rem] text-ink-2">
         <span className="font-semibold text-ink">How to read this.</span> Each large box is a
         spending area: one of the Governor’s cabinet offices, or an independent office such as the
         courts. Inside are its departments, and inside those, its programs (single budget line
-        items). Box sizes are drawn to scale.
+        items). Box sizes are drawn to scale. Bond-funded capital spending (construction, land
+        purchases) is not drawn; when you zoom into an area, its capital total is shown above the chart.
       </p>
 
       <SourceStrip />

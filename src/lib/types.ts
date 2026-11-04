@@ -16,10 +16,20 @@ export type Meta = {
   generated: string;
   years: number[];
   partial?: Record<string, { through: string; label: string; revenueThrough?: string }>;
-  sources: { spending: SourceInfo; revenue: SourceInfo };
+  sources: { spending: SourceInfo; revenue: SourceInfo; capital?: SourceInfo };
   totals: Record<string, YearTotals>;
   revenueGroups?: { id: string; name: string }[];
+  /** Bond-funded capital payments by year, outside every chart total (DATA_CONTRACT "capital"). */
+  capital?: Record<string, CapitalYear>;
   coverage?: Record<string, { mappedAccounts: number; otherAccounts: number; otherBuckets: number; mappedShareActual: number; mappedShareEnacted: number }>;
+};
+
+export type CapitalYear = {
+  total: number;
+  /** Keyed by secretariat id (sec:EEA); areas with no capital payments are absent. */
+  bySec: Record<string, number>;
+  /** Keyed by department id (dept:EEA/DCR). */
+  byDept: Record<string, number>;
 };
 
 export type TreeNode = {

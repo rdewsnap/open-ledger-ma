@@ -13,6 +13,7 @@ from scratch.
 |---|---|---|---|---|
 | Spending (budgeted and spent) | CTHRU Budget-to-Actual, "Budget_Actual_With_Other_Spending_Authorizationv3_Gen2" | `kv7m-35wn` | [dataset page](https://cthru.data.socrata.com/d/kv7m-35wn) · [API](https://cthru.data.socrata.com/resource/kv7m-35wn.json) | none |
 | Revenue (collected) | CTHRU "Commonwealth Revenue Collections" | `kcy7-ivxi` | [dataset page](https://cthru.data.socrata.com/d/kcy7-ivxi) · [API](https://cthru.data.socrata.com/resource/kcy7-ivxi.json) | `fund_category_name = 'Budgeted Funds'` |
+| Capital spending (shown beside the charts, not in them) | CTHRU "Comptroller of the Commonwealth Spending" | `pegc-naaa` | [dataset page](https://cthru.data.socrata.com/d/pegc-naaa) · [API](https://cthru.data.socrata.com/resource/pegc-naaa.json) | `appropriation_type like '(2CN)%'` |
 
 Both datasets are on the Socrata portal at `cthru.data.socrata.com` and were pulled with the
 SODA API on **2026-11-03**. The exact pull time of each file, and each dataset's
@@ -177,6 +178,32 @@ where any specific dollar went. These links are marked `proportional: true` in `
 (Some revenue is in fact dedicated by law, such as the income surtax for the Education and
 Transportation Fund; the allocation does not reflect that.)
 
+## Capital spending
+
+The charts show the **operating** side of the state's finances: the annual budget and the
+spending recorded against it. The state also spends money on **capital** projects (roads and
+bridges, buildings, parks, land purchases, housing and IT) that is mostly borrowed through bonds
+and paid out over several years. In FY2026 that was about $4.6B of payments, over half of it for
+transportation.
+
+Capital is kept out of the charts for three reasons. Adding it to spending would mean adding
+bond proceeds to revenue, which makes "revenue minus spending" even harder to read. A bond
+authorization is spent over many years, so one year's capital payments do not line up with one
+year's budget. And the operating budget is the figure the Legislature votes on each year and the
+one news coverage refers to.
+
+Instead, a spending area's capital payments are shown next to it: in the Flow breakdown panel and
+above the Scale chart when you zoom in. The figures are payments from capital appropriations
+(`appropriation_type` `(2CN) CAPITAL`) in the Comptroller's spending dataset, summed by department.
+Capital is paid from separate funds, so none of it is already counted in the operating figures.
+Federal highway money spent through the Federal Highway Construction fund is included; most other
+federal grants are not.
+
+The **Put an amount in context** box divides an amount you type by an area's operating figure,
+by the same plus its capital payments, and by all operating spending. It is arithmetic only and
+takes no view on whether an amount is large. The amount is kept in the page URL (`?amt=65000000`)
+so a comparison can be shared.
+
 ## Highlight lens
 
 The **Highlight** control lets a reader pick any spending areas or departments and see them
@@ -202,9 +229,12 @@ anyone reusing the data; the site's interface does not read it.
 - **Off-budget trusts and non-budgeted funds** are outside this picture. The spending dataset
   covers appropriated accounts and other spending authorizations recorded in the state
   accounting system; the revenue side is limited to budgeted funds. Capital (bond-funded)
-  spending, most trust funds, and authorities such as the MBTA, Massachusetts Port Authority,
+  spending is shown beside the charts but not in them (see "Capital spending"). Most trust funds, and authorities such as the MBTA, Massachusetts Port Authority,
   and the Massachusetts School Building Authority spend money that does not appear here except
   where the state budget transfers money to them.
+- **Capital is payments, not appropriations.** There is no single annual capital budget to
+  compare with, so the capital figure is what was paid out in the year, in both the Budgeted and
+  Spent views.
 - **Federal pass-through.** Federal reimbursements (mostly for MassHealth) are counted as
   revenue when received, and the related spending is counted in the programs that spend it.
   Federal grants spent through federal trust funds are generally not in these datasets.
