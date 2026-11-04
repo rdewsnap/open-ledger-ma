@@ -13,8 +13,6 @@ import {
   filterRows,
   maxAbsDelta,
   resolvePair,
-  socrataPairUrl,
-  socrataYearsUrl,
   sortRows,
   summarize,
   toChangeRows,
@@ -26,6 +24,8 @@ import { useMediaQuery } from '../state/media';
 import { useMeta } from '../state/meta';
 import { useLedgerParams } from '../state/params';
 import { useAsync } from '../state/useAsync';
+import { sourcePath } from '../lib/source';
+import { Link } from 'react-router';
 
 const PAGE = 50;
 
@@ -110,8 +110,8 @@ export function ChangesView() {
           ? 'Highest'
           : 'Lowest';
   const rowsHref = useCallback(
-    (acct: string) => socrataPairUrl(meta.sources.spending, from, to, acct),
-    [meta, from, to],
+    (acct: string) => sourcePath({ ds: 'spending', years: [from, to], account: acct }),
+    [from, to],
   );
 
   const tA = meta.totals[String(from)];
@@ -182,14 +182,14 @@ export function ChangesView() {
               aria-pressed={measure === m}
               onClick={() => setMeasure(m)}
             >
-              {m === 'enacted' ? 'Enacted' : 'Spent'}
+              {m === 'enacted' ? 'Budgeted' : 'Spent'}
             </button>
           ))}
         </div>
       </div>
 
       {partialB && measure === 'actual' ? (
-        <p className="mt-4 rounded-[8px] border border-clay/30 bg-clay-2/30 px-3 py-2 text-[0.9rem] text-ink">
+        <p className="mt-4 rounded-[8px] border border-brick/30 bg-brick-2/30 px-3 py-2 text-[0.9rem] text-ink">
           {fyShort(to)} spending is through {longDate(partialB.through)}; this compares a partial
           year with a full one.
         </p>
@@ -217,7 +217,7 @@ export function ChangesView() {
               type="checkbox"
               checked={hlOnly}
               onChange={(e) => setHlOnly(e.target.checked)}
-              className="h-4 w-4 accent-moss"
+              className="h-4 w-4 accent-gold"
             />
             <HighlightDot /> Highlighted only
           </label>
@@ -292,7 +292,7 @@ export function ChangesView() {
       <p className="mt-6 max-w-[70ch] text-[0.95rem] text-ink-2">
         <span className="font-semibold text-ink">How to read this.</span> Bars run right for
         increases and left for decreases, scaled to the largest change in the list.{' '}
-        {measure === 'enacted' ? 'Enacted' : spentB} amounts; “new” means the program had $0 in{' '}
+        {measure === 'enacted' ? 'Budgeted' : spentB} amounts; “new” means the program had $0 in{' '}
         {fyLong(from)}. Items marked “bucket” sum a department’s smaller line items.
       </p>
 
@@ -303,7 +303,7 @@ export function ChangesView() {
         <span aria-hidden="true" className="px-1.5 text-ink-2/60">
           ·
         </span>
-        <a href={socrataYearsUrl(meta.sources.spending, from, to)}>rows for both years</a>
+        <Link to={sourcePath({ ds: 'spending', years: [from, to] })}>rows for both years</Link>
       </p>
     </section>
   );

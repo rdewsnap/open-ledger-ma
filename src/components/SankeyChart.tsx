@@ -20,11 +20,15 @@ const touches = (l: L, id: string) => (l.source as N).id === id || (l.target as 
 type Props = {
   model: FlowModel;
   width: number;
-  /** A highlight set is active: highlighted nodes turn moss, the rest step back to 45%. */
+  /** A highlight set is active: highlighted nodes turn gold, the rest step back to 45%. */
   highlighting: boolean;
+  /** Expanded spending area (right column shows its programs). */
   focus: string | null;
   onFocus: (id: string | null) => void;
-  spendWord: string; // "spending" / "enacted spending"
+  /** Node shown in the breakdown below the chart (any column). */
+  selected: string | null;
+  onSelect: (id: string | null) => void;
+  spendWord: string; // "spending" / "budgeted spending"
   label: string; // aria label for the chart
 };
 
@@ -33,7 +37,7 @@ function truncate(s: string, px: number, charPx: number) {
   return s.length <= max ? s : `${s.slice(0, max - 1).trimEnd()}…`;
 }
 
-export function SankeyChart({ model, width, highlighting, focus, onFocus, spendWord, label }: Props) {
+export function SankeyChart({ model, width, highlighting, focus, onFocus, selected, onSelect, spendWord, label }: Props) {
   const [hover, setHover] = useState<{ kind: 'node' | 'link'; id: string } | null>(null);
   const [tip, setTip] = useState<{ data: TipData; x: number; y: number } | null>(null);
   const [kbFocus, setKbFocus] = useState<string | null>(null);
@@ -136,12 +140,12 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
       wholeLabel: isRev ? 'revenue collected' : `total ${spendWord}`,
       highlighted: highlighting && n.highlighted,
       hint: isRev
-        ? 'Its ribbons split spending in proportion to this share of revenue.'
+        ? 'Click for what it pays for, in proportion.'
         : n.kind === 'secretariat'
           ? focus === n.id
-            ? 'Click or press Enter to show all programs.'
-            : 'Click or press Enter to see its programs.'
-          : undefined,
+            ? 'Click or press Enter to show all spending areas again.'
+            : 'Click or press Enter for its programs and a breakdown.'
+          : 'Click or press Enter for details.',
     };
   };
   const linkTip = (l: L): TipData => ({
@@ -161,31 +165,33 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   };
 
-  // Which nodes/links are "lit".
+  // The lit node: the selection if any, else the expanded spending area.
+  const lit = selected && layout.nodes.some((n) => n.id === selected) ? selected : focus;
+  const litKind = lit ? layout.nodes.find((n) => n.id === lit)?.kind : undefined;
   const focusSet = useMemo(() => {
-    if (!focus) return null;
-    const ids = new Set<string>([focus]);
-    for (const l of layout.links) if (touches(l, focus)) ids.add((l.source as N).id).add((l.target as N).id);
+    if (!lit) return null;
+    const ids = new Set<string>([lit]);
+    for (const l of layout.links) if (touches(l, lit)) ids.add((l.source as N).id).add((l.target as N).id);
     return ids;
-  }, [focus, layout.links]);
+  }, [lit, layout.links]);
 
   const linkStyle = (l: L): { stroke: string; opacity: number } => {
     let stroke = l.color;
     let opacity = 0.35;
     if (highlighting) {
-      if (l.highlighted) stroke = COLORS.moss;
+      if (l.highlighted) stroke = COLORS.gold;
       else opacity *= 0.45;
     }
-    if (focus) {
-      if (touches(l, focus)) {
-        stroke = highlighting && l.highlighted ? COLORS.moss : COLORS.clay;
+    if (lit) {
+      if (touches(l, lit)) {
+        stroke = highlighting && l.highlighted ? COLORS.gold : COLORS.brick;
         opacity = 0.5;
       } else opacity = 0.06;
     }
     if (hover) {
       const lit = hover.kind === 'link' ? linkId(l) === hover.id : touches(l, hover.id);
       if (lit) opacity = Math.max(opacity, 0.7);
-      else if (!focus) opacity *= 0.7;
+      else if (!lit) opacity *= 0.7;
     }
     return { stroke, opacity };
   };
@@ -194,12 +200,12 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
     let fill = n.color;
     let opacity = 1;
     if (highlighting && n.kind !== 'revenue') {
-      if (n.highlighted) fill = COLORS.moss;
+      if (n.highlighted) fill = COLORS.gold;
       else opacity = 0.45;
     }
-    if (focus) {
-      if (n.id === focus) fill = highlighting && n.highlighted ? COLORS.moss : COLORS.clay;
-      else if (n.kind === 'secretariat') opacity = Math.min(opacity, 0.35);
+    if (lit) {
+      if (n.id === lit) fill = highlighting && n.highlighted ? COLORS.gold : COLORS.brick;
+      else if (n.kind === litKind) opacity = Math.min(opacity, 0.35);
     }
     return { fill, opacity };
   };
@@ -211,10 +217,14 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
     return o;
   };
 
+  const activate = (n: N) => {
+    if (n.kind === 'secretariat') onFocus(focus === n.id && (!selected || selected === n.id) ? null : n.id);
+    else onSelect(selected === n.id ? null : n.id);
+  };
   const onNodeKey = (e: KeyboardEvent, n: N) => {
-    if (n.kind === 'secretariat' && (e.key === 'Enter' || e.key === ' ')) {
+    if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      onFocus(focus === n.id ? null : n.id);
+      activate(n);
     }
   };
 
@@ -238,12 +248,12 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
         className="block select-none"
         style={{ fontFamily: 'var(--font-sans)' }}
       >
-        <rect x={0} y={0} width={width} height={layout.height} fill="transparent" onClick={() => focus && onFocus(null)} />
+        <rect x={0} y={0} width={width} height={layout.height} fill="transparent" onClick={() => (focus || selected) && onFocus(null)} />
 
         {/* Column heads */}
         <g style={{ fontSize: 13, fontWeight: 600 }} fill={COLORS.ink2}>
           <text x={revenueX1} y={14} textAnchor="end">Revenue</text>
-          <text x={secX0} y={14}>Secretariats</text>
+          <text x={secX0} y={14}>Spending areas</text>
           <text x={progX0} y={14}>
             {focusName && layout.zoom > 1 ? 'Programs · enlarged to fit' : 'Programs'}
           </text>
@@ -275,8 +285,9 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
                 onClick={() => {
                   const s2 = src(l);
                   const t2 = tgt(l);
-                  const sec = s2.kind === 'secretariat' ? s2.id : t2.kind === 'secretariat' ? t2.id : null;
-                  if (sec) onFocus(focus === sec ? null : sec);
+                  if (t2.kind === 'program') onSelect(t2.id);
+                  else if (t2.kind === 'secretariat') onFocus(t2.id);
+                  else if (s2.kind === 'secretariat') onFocus(s2.id);
                 }}
               />
             );
@@ -292,7 +303,6 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
             const y1 = n.y1 ?? 0;
             const h = Math.max(1, y1 - y0);
             const st = nodeStyle(n);
-            const isSec = n.kind === 'secretariat';
             const isRev = n.kind === 'revenue';
             const cy = (y0 + y1) / 2;
             const lx = isRev ? x0 - 8 : x1 + 8;
@@ -311,19 +321,19 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
               <g
                 key={n.id}
                 tabIndex={0}
-                role={isSec ? 'button' : 'img'}
-                aria-pressed={isSec ? focus === n.id : undefined}
-                aria-label={isSec ? `${nodeLabel}. ${focus === n.id ? 'Showing its programs.' : 'Show its programs.'}` : nodeLabel}
+                role="button"
+                aria-pressed={n.id === lit}
+                aria-label={`${nodeLabel}. ${n.id === lit ? 'Selected; breakdown below the chart.' : 'Show a breakdown below the chart.'}`}
                 aria-describedby={tip && kbFocus === n.id ? 'flow-tip' : undefined}
                 className="outline-none"
-                style={{ cursor: isSec ? 'pointer' : 'default' }}
+                style={{ cursor: 'pointer' }}
                 onFocus={(e) => { if (e.currentTarget.matches(':focus-visible')) setKbFocus(n.id); setHover({ kind: 'node', id: n.id }); showNodeTipAt(n); }}
                 onBlur={() => { setKbFocus(null); setHover(null); setTip(null); }}
                 onKeyDown={(e) => onNodeKey(e, n)}
                 onMouseEnter={(e) => { setHover({ kind: 'node', id: n.id }); setTip({ data: nodeTip(n), ...localPoint(e) }); }}
                 onMouseMove={(e) => { const p = localPoint(e); setTip((t) => (t ? { ...t, ...p } : t)); }}
                 onMouseLeave={() => { setHover(null); setTip(null); }}
-                onClick={() => isSec && onFocus(focus === n.id ? null : n.id)}
+                onClick={() => activate(n)}
               >
                 {/* generous hit area */}
                 <rect x={x0 - 4} y={y0 - 2} width={x1 - x0 + 8} height={h + 4} fill="transparent" />
@@ -338,14 +348,14 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, spendW
                   style={{ transition: 'fill 240ms ease-out, opacity 240ms ease-out' }}
                 />
                 {kbFocus === n.id ? (
-                  <rect x={x0 - 3.5} y={y0 - 3.5} width={x1 - x0 + 7} height={h + 7} rx={4} fill="none" stroke={COLORS.clay} strokeWidth={2} />
+                  <rect x={x0 - 3.5} y={y0 - 3.5} width={x1 - x0 + 7} height={h + 7} rx={4} fill="none" stroke={COLORS.brick} strokeWidth={2} />
                 ) : null}
                 {twoLine || oneLine ? (
                   <g opacity={labelOpacity(n)} style={{ transition: "opacity 240ms ease-out" }}>
-                    {dotW ? <circle cx={dotX} cy={twoLine ? cy - 7.5 : cy} r={4} fill={COLORS.moss} stroke={COLORS.paper} strokeWidth={1.5} /> : null}
+                    {dotW ? <circle cx={dotX} cy={twoLine ? cy - 7.5 : cy} r={4} fill={COLORS.gold} stroke={COLORS.paper} strokeWidth={1.5} /> : null}
                     {twoLine ? (
                       <>
-                        <text x={textX} y={cy - 3} textAnchor={anchor} className="svg-label" fill={COLORS.ink} style={{ fontSize: narrow ? 13 : 14, fontWeight: isSec && focus === n.id ? 650 : 500 }}>
+                        <text x={textX} y={cy - 3} textAnchor={anchor} className="svg-label" fill={COLORS.ink} style={{ fontSize: narrow ? 13 : 14, fontWeight: n.id === lit ? 650 : 500 }}>
                           {name}
                         </text>
                         <text x={textX} y={cy + 12} textAnchor={anchor} className="svg-label num" fill={COLORS.ink2} style={{ fontSize: 12.5 }}>

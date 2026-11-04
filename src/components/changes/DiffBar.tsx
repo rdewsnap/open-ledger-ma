@@ -3,21 +3,21 @@ type Props = {
   /** Largest |change| in the current set; half the track is this much. */
   max: number;
   highlighted?: boolean;
-  /** A highlight set is active: highlighted bars turn moss, the rest step back. */
+  /** A highlight set is active: highlighted bars turn gold, the rest step back. */
   highlighting?: boolean;
   thin?: boolean;
 };
 
 /**
- * Inline diverging bar: increases grow right in clay, decreases grow left in
+ * Inline diverging bar: increases grow right in brick, decreases grow left in
  * slate, from a zero line in ink. While a highlight is active, highlighted rows
- * are moss and everything else steps back.
+ * are gold and everything else steps back.
  */
 export function DiffBar({ delta, max, highlighted = false, highlighting = false, thin = false }: Props) {
   const share = max > 0 ? Math.min(1, Math.abs(delta) / max) : 0;
   // Keep any non-zero change visible as a sliver.
   const pct = delta === 0 ? 0 : Math.max(share * 50, 0.6);
-  const color = highlighting && highlighted ? 'bg-moss' : delta > 0 ? 'bg-clay' : 'bg-slate';
+  const color = highlighting && highlighted ? 'bg-gold' : delta > 0 ? 'bg-brick' : 'bg-slate';
   const dim = highlighting && !highlighted ? 'opacity-45' : '';
   return (
     <div aria-hidden="true" className={`relative w-full ${thin ? 'h-1.5' : 'h-3'}`}>

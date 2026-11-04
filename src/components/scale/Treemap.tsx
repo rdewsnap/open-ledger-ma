@@ -54,7 +54,7 @@ export function Treemap({ focus, width, height, colors, highlight, total, totalL
     const map = new Map<string, Paint>();
     for (const c of cells) {
       const hl = isHighlighted(c.node, highlight);
-      const base = hl ? COLORS.moss : (colors.get(c.node.data.sec) ?? COLORS.sand3);
+      const base = hl ? COLORS.gold : (colors.get(c.node.data.sec) ?? COLORS.blue3);
       const fill = cellFill(base, c.node.depth);
       map.set(c.id, { fill, opacity: anyHighlight && !hl ? 0.45 : 1, text: textOn(fill), hl });
     }
@@ -245,7 +245,7 @@ export function Treemap({ focus, width, height, colors, highlight, total, totalL
                 aria-hidden={isTop ? undefined : true}
                 aria-describedby={isTop && tip?.id === c.id ? 'scale-tip' : undefined}
                 tabIndex={isTop ? (c.id === activeId ? 0 : -1) : undefined}
-                className="absolute rounded-[4px] outline-none transition-[opacity,background-color,box-shadow] duration-200 ease-out hover:shadow-[inset_0_0_0_1.5px_rgba(43,40,36,0.55)] focus-visible:shadow-[inset_0_0_0_2px_#B5542D,inset_0_0_0_3.5px_#F7F3EA]"
+                className="absolute rounded-[4px] outline-none transition-[opacity,background-color,box-shadow] duration-200 ease-out hover:shadow-[inset_0_0_0_1.5px_rgba(28,36,51,0.55)] focus-visible:shadow-[inset_0_0_0_2px_#A8322D,inset_0_0_0_3.5px_#FAFAF7]"
                 style={{
                   left: c.x0,
                   top: c.y0,

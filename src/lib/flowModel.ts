@@ -8,18 +8,21 @@ import { ancestorIndex, inHighlight, NO_HIGHLIGHT, secOf, type HighlightSet } fr
 import type { FlowNodeKind, Flows, Measure, TreeNode } from './types';
 
 export const COLORS = {
-  paper: '#F7F3EA',
-  paper2: '#EFE9DC',
-  rule: '#D9D1C2',
-  ink: '#2B2824',
-  ink2: '#6B655C',
-  clay: '#B5542D',
-  clay2: '#E8C9B8',
-  moss: '#5F7A5B',
-  slate: '#4A5A6A',
-  sand1: '#C9A27E',
-  sand2: '#D9BE9C',
-  sand3: '#E6D3B8',
+  paper: '#FAFAF7',
+  paper2: '#EFF1F2',
+  rule: '#D5D9DE',
+  ink: '#1C2433',
+  ink2: '#576174',
+  brick: '#A8322D',
+  brick2: '#F0D4D0',
+  gold: '#9A7414',
+  /* Revenue and decreases. */
+  slate: '#5E6673',
+  /* Spending: Commonwealth blue, lightening by size rank. */
+  navy: '#1F3A68',
+  blue1: '#4D6A96',
+  blue2: '#8EA4C3',
+  blue3: '#C9D4E4',
 } as const;
 
 export type ModelNode = {
@@ -101,11 +104,11 @@ export function treeLeaves(node: TreeNode, measure: Measure): Leaf[] {
 const ALL_OTHER = 'prog:__all-other';
 export const SMALL_SECS = 'sec:__small';
 
-const revenueRamp = scaleLinear<string>().domain([0, 1]).range([COLORS.slate, '#BCC5CD']);
-/** Spending ramp shared by Flow and Scale: clay through sand. */
+const revenueRamp = scaleLinear<string>().domain([0, 1]).range([COLORS.slate, '#CDD1D7']);
+/** Spending ramp shared by Flow and Scale: navy through pale blue. */
 export const warmRamp = scaleLinear<string>()
   .domain([0, 0.34, 0.67, 1])
-  .range([COLORS.clay, COLORS.sand1, COLORS.sand2, COLORS.sand3]);
+  .range([COLORS.navy, COLORS.blue1, COLORS.blue2, COLORS.blue3]);
 
 export function isOtherId(id: string): boolean {
   return id.startsWith('prog:other') || id === ALL_OTHER;
@@ -174,7 +177,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
     amount: n.value,
     highlighted: isHl(n.id),
     bucket: false,
-    color: secColor.get(n.id) ?? COLORS.sand2,
+    color: secColor.get(n.id) ?? COLORS.blue2,
     order: order++,
   }));
   const secById = new Map(secNodes.map((s) => [s.id, s]));
@@ -190,7 +193,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
       highlighted: isHl(id, parent),
       parent,
       bucket: isOtherId(id),
-      color: (parent && secColor.get(parent)) ?? COLORS.sand3,
+      color: (parent && secColor.get(parent)) ?? COLORS.blue3,
       order: 0,
     };
   };
@@ -213,7 +216,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
     parent: secId,
     dept: l.dept,
     bucket: l.other,
-    color: secColor.get(secId) ?? COLORS.sand3,
+    color: secColor.get(secId) ?? COLORS.blue3,
     order: 0,
   });
   const treeSec = new Map((tree?.children ?? []).map((c) => [c.id, c]));
@@ -243,12 +246,12 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
     for (const p of keep) drawn.set(p.id, { ...p, amount: 0 });
     const sec = secById.get(focus);
     const addLink = (target: string, value: number, highlighted: boolean) =>
-      linkAgg.set(`${focus}→${target}`, { source: focus, target, value, proportional: false, highlighted, color: sec?.color ?? COLORS.sand2 });
+      linkAgg.set(`${focus}→${target}`, { source: focus, target, value, proportional: false, highlighted, color: sec?.color ?? COLORS.blue2 });
     for (const p of keep) addLink(p.id, p.amount, p.highlighted);
     if (rest > 0) {
       const oid = otherIdFor(focus);
       const hl = Boolean(sec?.highlighted);
-      drawn.set(oid, { id: oid, name: otherName(focus), kind: 'program', amount: 0, highlighted: hl, parent: focus, bucket: true, color: sec?.color ?? COLORS.sand3, order: 0 });
+      drawn.set(oid, { id: oid, name: otherName(focus), kind: 'program', amount: 0, highlighted: hl, parent: focus, bucket: true, color: sec?.color ?? COLORS.blue3, order: 0 });
       addLink(oid, rest, hl);
     }
   } else if (focus) {
@@ -318,7 +321,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
           highlighted: isAll ? false : Boolean(secById.get(l.source)?.highlighted),
           parent: isAll ? undefined : l.source,
           bucket: true,
-          color: isAll ? COLORS.rule : (secColor.get(l.source) ?? COLORS.sand3),
+          color: isAll ? COLORS.rule : (secColor.get(l.source) ?? COLORS.blue3),
           order: 0,
         });
       }
@@ -334,7 +337,7 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
           value: l.value,
           proportional: Boolean(l.proportional),
           highlighted: Boolean(tgtNode?.highlighted ?? sec?.highlighted),
-          color: sec?.color ?? COLORS.sand2,
+          color: sec?.color ?? COLORS.blue2,
         });
       }
     }

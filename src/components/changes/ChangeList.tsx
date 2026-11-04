@@ -17,7 +17,7 @@ export function ChangeList({ rows, max, highlighting, rowsHref }: Props) {
   return (
     <ul className="mt-3 border-t border-rule">
       {rows.map((r) => (
-        <li key={r.id} className={`border-b border-rule/70 py-2.5 ${highlighting && r.highlighted ? 'bg-moss/[0.06]' : ''}`}>
+        <li key={r.id} className={`border-b border-rule/70 py-2.5 ${highlighting && r.highlighted ? 'bg-gold/[0.06]' : ''}`}>
           <p className="flex items-center gap-1.5 text-[1rem] leading-snug">
             {highlighting && r.highlighted ? <HighlightDot title="Highlighted" /> : null}
             {r.account ? (

@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router';
 import source from '../../../METHODOLOGY.md?raw';
 import { Prose } from './Prose';
 import { slugify } from './text';
@@ -25,6 +26,11 @@ function parse(md: string) {
 
 export default function MethodologyPage() {
   const { dek, body, toc } = useMemo(() => parse(source), []);
+  // The page is lazy-loaded, so the browser's own jump to #anchor misses; do it here.
+  const { hash } = useLocation();
+  useEffect(() => {
+    if (hash) document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView();
+  }, [hash]);
   return (
     <section className="py-8 md:py-12">
       <p className="eyebrow">Methodology</p>
@@ -37,7 +43,7 @@ export default function MethodologyPage() {
             <ol className="mt-3 space-y-2 border-l border-rule pl-3 text-[0.85rem] leading-snug">
               {toc.map((t) => (
                 <li key={t.id}>
-                  <a href={`#${t.id}`} className="text-ink-2 no-underline hover:text-clay-text hover:underline">
+                  <a href={`#${t.id}`} className="text-ink-2 no-underline hover:text-brick-text hover:underline">
                     {t.title}
                   </a>
                 </li>

@@ -1,58 +1,82 @@
 @import 'tailwindcss';
 
 /*
- * The only web font: Source Serif 4 (latin, variable weight), self-hosted from
- * /public/fonts so index.html can preload it at a stable path. Headings and the
- * wordmark only; body text uses the system stack.
+ * Two self-hosted web fonts (latin subsets in /public/fonts, preloaded in
+ * index.html): Libre Caslon Text for the wordmark and headings, after the
+ * Caslon type that colonial Boston and Philadelphia printers set; and Public
+ * Sans, the U.S. Web Design System's typeface, for body text and figures.
  */
 @font-face {
-  font-family: 'Source Serif 4 Variable';
+  font-family: 'Libre Caslon Text';
   font-style: normal;
   font-display: swap;
-  font-weight: 200 900;
-  src: url('/fonts/source-serif-4-latin-wght-normal.woff2') format('woff2-variations');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  font-weight: 400;
+  src: url('/fonts/libre-caslon-text-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Libre Caslon Text';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('/fonts/libre-caslon-text-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Public Sans Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/public-sans-latin-wght-normal.woff2') format('woff2-variations');
 }
 
 /*
- * Size-matched fallback while the serif loads: local Georgia Bold scaled to
- * Source Serif 4 at 600 (average glyph width and vertical metrics), so the swap
- * does not move the headings. Values measured with fontTools.
+ * Size-matched local fallbacks so the swap does not move text. Values measured
+ * with fontTools against Georgia Bold and Arial.
  */
 @font-face {
-  font-family: 'Source Serif Fallback';
-  font-style: normal;
-  font-weight: 200 900;
-  src: local('Georgia Bold'), local('Georgia-Bold'), local('Georgia');
-  size-adjust: 94.4%;
-  ascent-override: 109.7%;
-  descent-override: 35.5%;
+  font-family: 'Caslon Fallback';
+  src: local('Georgia'), local('Georgia Regular');
+  size-adjust: 100.1%;
+  ascent-override: 96.9%;
+  descent-override: 26%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Public Sans Fallback';
+  src: local('Arial'), local('Helvetica');
+  size-adjust: 101.7%;
+  ascent-override: 93.4%;
+  descent-override: 22.1%;
   line-gap-override: 0%;
 }
 
 @theme {
-  --color-paper: #f7f3ea;
-  --color-paper-2: #efe9dc;
-  --color-rule: #d9d1c2;
-  --color-ink: #2b2824;
-  --color-ink-2: #6b655c;
+  /* White paper, navy ink, Commonwealth blue for spending, Freedom Trail brick for accents, flag gold for highlights. */
+  --color-paper: #fafaf7;
+  --color-paper-2: #eff1f2;
+  --color-rule: #d5d9de;
+  --color-ink: #1c2433;
+  --color-ink-2: #576174;
   /* Fills, bars and chart marks. */
-  --color-clay: #b5542d;
-  /* Clay for text under 24px (links, labels): 5.3:1 on paper. */
-  --color-clay-text: #a54a26;
-  --color-clay-2: #e8c9b8;
-  --color-moss: #5f7a5b;
-  --color-slate: #4a5a6a;
-  --color-sand-1: #c9a27e;
-  --color-sand-2: #d9be9c;
-  --color-sand-3: #e6d3b8;
+  --color-brick: #a8322d;
+  /* Brick for text under 24px (links, labels): 7:1 on paper. */
+  --color-brick-text: #9a2a25;
+  --color-brick-2: #f0d4d0;
+  /* The Highlight lens. */
+  --color-gold: #9a7414;
+  /* Revenue and decreases. */
+  --color-slate: #5e6673;
+  /* Spending: Commonwealth blue, lightening by size rank. */
+  --color-navy: #1f3a68;
+  --color-blue-1: #4d6a96;
+  --color-blue-2: #8ea4c3;
+  --color-blue-3: #c9d4e4;
 
-  --font-display: 'Source Serif 4 Variable', 'Source Serif Fallback', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Libre Caslon Text', 'Caslon Fallback', 'Big Caslon', Georgia, serif;
+  --font-sans: 'Public Sans Variable', 'Public Sans Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  --radius-control: 6px;
-  --radius-card: 8px;
+  --radius-control: 4px;
+  --radius-card: 6px;
   --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
@@ -65,15 +89,15 @@
   body {
     margin: 0;
     font-family: var(--font-sans);
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.6;
     background: var(--color-paper);
   }
   h1,
   h2 {
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-weight: 400;
+    letter-spacing: 0;
     line-height: 1.1;
     text-wrap: balance;
   }
@@ -94,26 +118,26 @@
     line-height: 1.3;
   }
   a {
-    color: var(--color-clay-text);
+    color: var(--color-brick-text);
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
-    text-decoration-color: color-mix(in srgb, var(--color-clay-text) 60%, transparent);
+    text-decoration-color: color-mix(in srgb, var(--color-brick-text) 60%, transparent);
     transition:
       color 200ms var(--ease-out-soft),
       text-decoration-color 200ms var(--ease-out-soft);
   }
   a:hover {
-    color: #8e3f20;
-    text-decoration-color: var(--color-clay-text);
+    color: #7a1f1b;
+    text-decoration-color: var(--color-brick-text);
   }
   :focus-visible {
-    outline: 2px solid var(--color-clay);
+    outline: 2px solid var(--color-brick);
     outline-offset: 2px;
     border-radius: 4px;
   }
   ::selection {
-    background: var(--color-clay-2);
+    background: var(--color-brick-2);
   }
 }
 
@@ -125,16 +149,16 @@
 
   /* A button that reads as a link ("Clear", "Show all", "Close"). */
   .link {
-    color: var(--color-clay-text);
+    color: var(--color-brick-text);
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
-    text-decoration-color: color-mix(in srgb, var(--color-clay-text) 60%, transparent);
+    text-decoration-color: color-mix(in srgb, var(--color-brick-text) 60%, transparent);
     cursor: pointer;
   }
   .link:hover {
-    color: #8e3f20;
-    text-decoration-color: var(--color-clay-text);
+    color: #7a1f1b;
+    text-decoration-color: var(--color-brick-text);
   }
   .link:disabled {
     color: var(--color-ink-2);

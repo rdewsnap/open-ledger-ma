@@ -4,7 +4,7 @@ import { HighlightDot } from './HighlightDot';
 type Props = {
   part: number;
   whole: number;
-  /** "spending", "enacted spending", "spending so far" */
+  /** "spending", "budgeted spending", "spending so far" */
   wholeLabel: string;
   onClear: () => void;
 };

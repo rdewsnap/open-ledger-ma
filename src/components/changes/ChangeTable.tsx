@@ -4,6 +4,7 @@ import { DiffBar } from './DiffBar';
 import { pctText } from './rowText';
 import { HighlightDot } from '../HighlightDot';
 import { BucketTag } from './Tags';
+import { Link } from 'react-router';
 
 type Props = {
   rows: ChangeRow[];
@@ -42,14 +43,14 @@ export function ChangeTable({ rows, max, labelA, labelB, sortKey, sortDir, highl
       </thead>
       <tbody>
         {rows.map((r) => (
-          <tr key={r.id} className={`border-b border-rule/70 align-top transition-colors duration-200 hover:bg-paper-2/60 ${highlighting && r.highlighted ? 'bg-moss/[0.06]' : ''}`}>
+          <tr key={r.id} className={`border-b border-rule/70 align-top transition-colors duration-200 hover:bg-paper-2/60 ${highlighting && r.highlighted ? 'bg-gold/[0.06]' : ''}`}>
             <td className="py-2 pr-3">
               <span className="flex items-center gap-1.5">
                 {highlighting && r.highlighted ? <HighlightDot title="Highlighted" /> : null}
                 {r.account ? (
-                  <a href={rowsHref(r.account)} className="truncate" title={`${r.name}: source rows for both years`}>
+                  <Link to={rowsHref(r.account)} className="truncate" title={`${r.name}: source rows for both years`}>
                     {r.name}
-                  </a>
+                  </Link>
                 ) : (
                   <span className="truncate text-ink-2">{r.name}</span>
                 )}

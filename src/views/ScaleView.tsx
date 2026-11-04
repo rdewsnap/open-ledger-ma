@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router';
 import { Breadcrumb } from '../components/scale/Breadcrumb';
 import { HighlightCallout } from '../components/HighlightCallout';
+import { OverBudgetNote } from '../components/OverBudgetNote';
 import { ScaleList } from '../components/scale/ScaleList';
 import { Treemap } from '../components/scale/Treemap';
 import { SourceStrip } from '../components/SourceStrip';
@@ -107,12 +108,12 @@ export function ScaleView() {
 
   const total = root?.value ?? 0;
   const spentLabel = partial ? 'Spent so far' : 'Spent';
-  const measureLabel = measure === 'enacted' ? 'Enacted' : spentLabel;
+  const measureLabel = measure === 'enacted' ? 'Budgeted' : spentLabel;
   const spendWord =
-    measure === 'enacted' ? 'enacted spending' : partial ? 'spending so far' : 'spending';
+    measure === 'enacted' ? 'budgeted spending' : partial ? 'spending so far' : 'spending';
   const totalLabel =
     measure === 'enacted'
-      ? 'total enacted spending'
+      ? 'total budgeted spending'
       : partial
         ? 'spending so far'
         : 'total spending';
@@ -125,7 +126,7 @@ export function ScaleView() {
     const lead =
       measure === 'enacted' ? (
         <>
-          For {fyLong(year)} the Legislature appropriated {amt} in the enacted budget.
+          For {fyLong(year)} the Legislature budgeted {amt}.
         </>
       ) : partial ? (
         <>
@@ -148,6 +149,7 @@ export function ScaleView() {
         ) : (
           '.'
         )}
+        <OverBudgetNote tree={treeData} measure={measure} partial={!!partial} />
       </>
     );
   })();
@@ -159,7 +161,7 @@ export function ScaleView() {
   return (
     <section className="min-h-[100svh] py-8 md:py-12">
       {usingFixture() ? (
-        <p className="mb-6 rounded-[8px] border border-clay/30 bg-clay-2/30 px-3 py-2 text-[0.8rem] text-ink">
+        <p className="mb-6 rounded-[8px] border border-brick/30 bg-brick-2/30 px-3 py-2 text-[0.8rem] text-ink">
           <strong className="font-semibold">Development fixture.</strong> /data is not built yet, so
           these are illustrative numbers, not real budget data.
         </p>
@@ -178,7 +180,7 @@ export function ScaleView() {
               aria-pressed={measure === m}
               onClick={() => setMeasure(m)}
             >
-              {m === 'enacted' ? 'Enacted' : spentLabel}
+              {m === 'enacted' ? 'Budgeted' : spentLabel}
             </button>
           ))}
         </div>

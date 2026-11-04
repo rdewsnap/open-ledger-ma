@@ -5,7 +5,7 @@
 [openledgerma.org](https://openledgerma.org) follows a state tax dollar from where it is
 collected to what it pays for. Three views, one click each:
 
-- **Flow** — where the money comes from and where it goes (revenue → secretariat → program).
+- **Flow** — where the money comes from and where it goes (revenue → spending area → program).
 - **Scale** — how big things are next to each other (zoomable treemap of the whole budget).
 - **Changes** — what moved between two fiscal years, in dollars and percent.
 

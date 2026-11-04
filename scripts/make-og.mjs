@@ -8,16 +8,16 @@ import wawoff2 from 'wawoff2';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const C = {
-  paper: '#F7F3EA', paper2: '#EFE9DC', rule: '#D9D1C2', ink: '#2B2824', ink2: '#6B655C',
-  clay: '#B5542D', slate: '#4A5A6A', sand1: '#C9A27E', sand2: '#D9BE9C', sand3: '#E6D3B8',
+  paper: '#FAFAF7', paper2: '#EFF1F2', rule: '#D5D9DE', ink: '#1C2433', ink2: '#576174',
+  brick: '#A8322D', navy: '#1F3A68', red: '#D2463E', slate: '#5E6673', blue1: '#4D6A96', blue2: '#8EA4C3', blue3: '#C9D4E4',
 };
 
 // --- tiny sankey: 3 columns, proportional links (illustrative shape only) ---
 const W = 1200, H = 630;
 const top = 318, bottom = 572, nodeW = 12, pad = 9;
 const cols = [
-  { x: 72, vals: [30, 17, 8, 7, 6, 4, 3], colors: ['#4A5A6A', '#5B6A79', '#6E7C89', '#828E99', '#96A0A9', '#A9B2B9', '#BCC5CD'] },
-  { x: 588, vals: [35, 13, 7, 5, 3, 2, 2, 1.6, 1.4], colors: [C.clay, '#BC6A45', '#C3815E', C.sand1, '#CFAE8B', C.sand2, '#DCC3A3', '#E1CBAD', C.sand3] },
+  { x: 72, vals: [30, 17, 8, 7, 6, 4, 3], colors: ['#5E6673', '#707784', '#838995', '#969BA5', '#A9ADB5', '#BBBFC6', '#CDD1D7'] },
+  { x: 588, vals: [35, 13, 7, 5, 3, 2, 2, 1.6, 1.4], colors: [C.navy, '#365280', C.blue1, '#6E87AD', C.blue2, '#A3B5CF', '#B3C2D8', '#BECBDE', C.blue3] },
   { x: 1116, vals: [], colors: [] },
 ];
 const total = cols[0].vals.reduce((a, b) => a + b, 0);
@@ -65,37 +65,38 @@ cols.forEach((c, ci) => {
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <rect width="${W}" height="${H}" fill="${C.paper}"/>
-  <g transform="translate(72 74)">
-    <rect x="0" y="0" width="64" height="64" rx="16" fill="${C.paper2}" stroke="${C.rule}" stroke-width="2"/>
-    <path d="M16 14v36" stroke="${C.ink}" stroke-width="2.8" stroke-linecap="round"/>
-    <path d="M16 23c14 0 14 -5 32 -5v9.2c-17 0-17 5-32 5Z" fill="${C.clay}"/>
-    <path d="M16 32.6c14 0 14 10.4 32 10.4v6c-18 0-18-10.8-32-10.8Z" fill="${C.clay}" opacity="0.55"/>
+  <g transform="translate(66 66) scale(2.25)">
+    <path d="M4.5 3h23v12.6c0 7.4-5.3 11.6-11.5 13.6C9.8 27.2 4.5 23 4.5 15.6Z" fill="${C.navy}"/>
+    <rect x="9.5" y="8.6" width="13" height="2.8" rx="0.6" fill="${C.red}"/>
+    <rect x="9.5" y="13.8" width="10" height="2.8" rx="0.6" fill="${C.paper}"/>
+    <rect x="9.5" y="19" width="6.5" height="2.8" rx="0.6" fill="${C.paper}"/>
   </g>
-  <text x="156" y="128" font-family="Source Serif 4" font-weight="600" font-size="70" letter-spacing="-0.7" fill="${C.ink}">Open Ledger <tspan fill="${C.clay}">MA</tspan></text>
-  <text x="74" y="214" font-family="Source Serif 4" font-weight="500" font-size="46" letter-spacing="-0.46" fill="${C.ink}">The Massachusetts budget, in plain sight.</text>
-  <text x="74" y="262" font-family="Helvetica Neue, Helvetica, Arial" font-weight="400" font-size="23" fill="${C.ink2}">Where state money comes from, and where it goes  ·  openledgerma.org</text>
+  <text x="158" y="128" font-family="Libre Caslon Text" font-weight="700" font-size="66" fill="${C.ink}">Open Ledger <tspan fill="${C.brick}">MA</tspan></text>
+  <text x="72" y="212" font-family="Libre Caslon Text" font-weight="400" font-size="44" fill="${C.ink}">The Massachusetts budget, in plain sight.</text>
+  <text x="74" y="262" font-family="Public Sans, Public Sans Thin" font-weight="400" font-size="23" fill="${C.ink2}">Where state money comes from, and where it goes  ·  openledgerma.org</text>
   <line x1="72" x2="1128" y1="292" y2="292" stroke="${C.rule}" stroke-width="2"/>
   <g style="mix-blend-mode:multiply">${paths}</g>
   ${nodes}
   <line x1="72" x2="1128" y1="596" y2="596" stroke="${C.rule}" stroke-width="2"/>
 </svg>`;
 
-// resvg needs TTF/OTF; decompress the static Source Serif 4 woff2 files (dev dependency) to a temp dir.
+// resvg needs TTF/OTF; decompress the woff2 files to a temp dir. (Fontsource's static
+// Public Sans 400 subset carries the family name "Public Sans Thin"; its glyphs are 400.)
 const tmp = mkdtempSync(path.join(tmpdir(), 'og-fonts-'));
 const fontFiles = [];
 for (const f of [
-  '@fontsource/source-serif-4/files/source-serif-4-latin-600-normal.woff2',
-  '@fontsource/source-serif-4/files/source-serif-4-latin-500-normal.woff2',
+  'public/fonts/libre-caslon-text-latin-700-normal.woff2',
+  'public/fonts/libre-caslon-text-latin-400-normal.woff2',
+  'node_modules/@fontsource/public-sans/files/public-sans-latin-400-normal.woff2',
 ]) {
-  const ttf = await wawoff2.decompress(readFileSync(path.join(root, 'node_modules', f)));
+  const ttf = await wawoff2.decompress(readFileSync(path.join(root, f)));
   const out = path.join(tmp, path.basename(f).replace('.woff2', '.ttf'));
   writeFileSync(out, ttf);
   fontFiles.push(out);
 }
 const png = new Resvg(svg, {
   fitTo: { mode: 'width', value: W },
-  // The small line uses the system sans (Helvetica/Arial), like the site's body text.
-  font: { fontFiles, loadSystemFonts: true, defaultFontFamily: 'Helvetica' },
+  font: { fontFiles, loadSystemFonts: false, defaultFontFamily: 'Public Sans Thin' },
 }).render().asPng();
 rmSync(tmp, { recursive: true, force: true });
 writeFileSync(path.join(root, 'public/og.png'), png);

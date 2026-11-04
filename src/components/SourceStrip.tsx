@@ -1,5 +1,6 @@
 import { Fragment } from 'react';
-import { socrataRowsUrl } from '../lib/data';
+import { Link } from 'react-router';
+import { sourcePath } from '../lib/source';
 import { fyShort, partialLabel } from '../lib/format';
 import { DATASET_NAMES } from '../lib/site';
 import { useMeta } from '../state/meta';
@@ -33,15 +34,17 @@ export function SourceStrip({ showRevenue = false, years }: Props) {
       {list.map((y, i) => (
         <Fragment key={y}>
           {i > 0 ? <Dot /> : null}
-          <a href={socrataRowsUrl(s, y)} aria-label={multi ? undefined : `rows for ${fyShort(y)}, from the source dataset`}>
+          <Link to={sourcePath({ ds: 'spending', years: [y] })} aria-label={multi ? undefined : `source rows for ${fyShort(y)}`}>
             {multi ? `${fyShort(y)} rows` : 'rows'}
-          </a>
+          </Link>
         </Fragment>
       ))}
       {showRevenue ? (
         <>
           <Dot />
           Revenue: <a href={r.url}>{DATASET_NAMES[r.id] ?? r.name}</a> (<span className="code">{r.id}</span>), pulled <span className="num">{r.pulled}</span>
+          <Dot />
+          <Link to={sourcePath({ ds: 'revenue', years: [year] })}>rows</Link>
         </>
       ) : null}
       {partials.map(({ y, p }) => (

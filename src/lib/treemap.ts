@@ -212,7 +212,7 @@ export function secretariatColors(root: ScaleNode, minShare = 0.005): Map<string
   const secs = (root.children ?? []).filter((s) => total > 0 && (s.value ?? 0) / total >= minShare);
   const out = new Map<string, string>();
   secs.forEach((s, i) => out.set(s.data.id, warmRamp(secs.length > 1 ? i / (secs.length - 1) : 0)));
-  for (const s of root.children ?? []) if (!out.has(s.data.id)) out.set(s.data.id, COLORS.sand3);
+  for (const s of root.children ?? []) if (!out.has(s.data.id)) out.set(s.data.id, COLORS.blue3);
   return out;
 }
 
@@ -251,7 +251,7 @@ function luminance(color: string): number {
 
 /** Label colors for cells: white on the darker fills, near-black on the lighter ones. */
 export const LABEL_LIGHT = '#FFFFFF';
-export const LABEL_DARK = '#1A1714';
+export const LABEL_DARK = '#141B27';
 
 /** White or near-black, whichever has more contrast on `fill` (labels are 11–12.5px, so this needs 4.5:1). */
 export function textOn(fill: string): string {

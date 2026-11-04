@@ -160,10 +160,10 @@ describe('hierarchy + layout', () => {
 
   it('tints toward paper and picks readable text', () => {
     expect(tint('#000000', 0)).toBe('#000000');
-    expect(tint('#B5542D', 1)).toBe('#f7f3ea');
-    expect(textOn('#2B2824')).toBe('#FFFFFF');
-    expect(textOn('#B5542D')).toBe('#FFFFFF');
-    expect(textOn('#BB6B45')).toBe('#1A1714');
-    expect(textOn('#E6D3B8')).toBe('#1A1714');
+    expect(tint('#A8322D', 1)).toBe('#fafaf7');
+    expect(textOn('#1C2433')).toBe('#FFFFFF');
+    expect(textOn('#A8322D')).toBe('#FFFFFF');
+    expect(textOn('#DA9D95')).toBe('#141B27');
+    expect(textOn('#EBCCC7')).toBe('#141B27');
   });
 });

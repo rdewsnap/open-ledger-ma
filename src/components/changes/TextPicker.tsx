@@ -7,7 +7,7 @@ type Props<T> = {
   onPick: (v: T) => void;
 };
 
-/** A row of plain text choices; the active one is underlined in clay. */
+/** A row of plain text choices; the active one is underlined in brick. */
 export function TextPicker<T extends string | number>({ label, value, options, onPick }: Props<T>) {
   return (
     <div className="flex items-baseline gap-2.5" role="group" aria-label={label}>
@@ -22,7 +22,7 @@ export function TextPicker<T extends string | number>({ label, value, options, o
             disabled={o.disabled}
             onClick={() => onPick(o.value)}
             className={`text-[0.95rem] underline-offset-[6px] transition-colors duration-200 disabled:cursor-not-allowed disabled:text-ink-2/40 ${
-              on ? 'text-ink underline decoration-clay decoration-2' : 'text-ink-2 hover:text-ink'
+              on ? 'text-ink underline decoration-brick decoration-2' : 'text-ink-2 hover:text-ink'
             }`}
           >
             {o.label}

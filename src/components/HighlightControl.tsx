@@ -96,10 +96,10 @@ export function HighlightControl() {
         aria-controls={open ? panelId : undefined}
         onClick={() => setOpen((o) => !o)}
         className={`inline-flex items-center gap-2 rounded-[6px] border px-3 py-1.5 text-[0.9rem] transition-colors duration-200 ${
-          count > 0 ? 'border-moss text-ink' : 'border-rule text-ink-2 hover:border-ink-2 hover:text-ink'
+          count > 0 ? 'border-gold text-ink' : 'border-rule text-ink-2 hover:border-ink-2 hover:text-ink'
         }`}
       >
-        <Ring className={`h-3.5 w-3.5 ${count > 0 ? 'text-moss' : ''}`} filled={count > 0} />
+        <Ring className={`h-3.5 w-3.5 ${count > 0 ? 'text-gold' : ''}`} filled={count > 0} />
         Highlight
         {count > 0 ? (
           <span>
@@ -122,8 +122,8 @@ export function HighlightControl() {
             onKeyDown={onPanelKey}
             className={
               wide
-                ? 'absolute top-full right-0 z-40 mt-2 flex max-h-[min(70vh,34rem)] w-[24rem] flex-col rounded-[8px] border border-rule bg-paper shadow-[0_8px_28px_rgba(43,40,36,0.14)]'
-                : 'fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] flex-col rounded-t-[8px] border-t border-rule bg-paper shadow-[0_-8px_28px_rgba(43,40,36,0.16)]'
+                ? 'absolute top-full right-0 z-40 mt-2 flex max-h-[min(70vh,34rem)] w-[24rem] flex-col rounded-[8px] border border-rule bg-paper shadow-[0_8px_28px_rgba(28,36,51,0.14)]'
+                : 'fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] flex-col rounded-t-[8px] border-t border-rule bg-paper shadow-[0_-8px_28px_rgba(28,36,51,0.16)]'
             }
           >
             <Panel
@@ -199,9 +199,9 @@ function Panel({ tree, loading, ids, valid, measure, titleId, filterRef, onChang
             Done
           </button>
         </div>
-        <p className="mt-1 text-[0.875rem] leading-snug text-ink-2">Pick secretariats or departments. They stay highlighted on Flow, Scale and Changes.</p>
+        <p className="mt-1 text-[0.875rem] leading-snug text-ink-2">Pick spending areas or departments. They stay highlighted on Flow, Scale and Changes.</p>
         <label className="mt-3 block">
-          <span className="sr-only">Filter secretariats and departments</span>
+          <span className="sr-only">Filter spending areas and departments</span>
           <input
             ref={filterRef}
             type="search"
@@ -210,7 +210,7 @@ function Panel({ tree, loading, ids, valid, measure, titleId, filterRef, onChang
             placeholder="Filter by name"
             autoComplete="off"
             spellCheck={false}
-            className="w-full rounded-[6px] border border-rule bg-paper px-3 py-1.5 text-[0.95rem] text-ink placeholder:text-ink-2/80 focus:border-clay focus:outline-none"
+            className="w-full rounded-[6px] border border-rule bg-paper px-3 py-1.5 text-[0.95rem] text-ink placeholder:text-ink-2/80 focus:border-brick focus:outline-none"
           />
         </label>
       </div>
@@ -295,7 +295,7 @@ function Check({ checked, indeterminate = false, disabled = false, onChange }: {
       ref={(el) => {
         if (el) el.indeterminate = indeterminate;
       }}
-      className="h-4 w-4 shrink-0 accent-moss"
+      className="h-4 w-4 shrink-0 accent-gold"
     />
   );
 }

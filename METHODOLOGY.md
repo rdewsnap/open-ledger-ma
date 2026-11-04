@@ -11,7 +11,7 @@ from scratch.
 
 | What | Dataset | ID | Links | Filter |
 |---|---|---|---|---|
-| Spending (enacted and spent) | CTHRU Budget-to-Actual, "Budget_Actual_With_Other_Spending_Authorizationv3_Gen2" | `kv7m-35wn` | [dataset page](https://cthru.data.socrata.com/d/kv7m-35wn) · [API](https://cthru.data.socrata.com/resource/kv7m-35wn.json) | none |
+| Spending (budgeted and spent) | CTHRU Budget-to-Actual, "Budget_Actual_With_Other_Spending_Authorizationv3_Gen2" | `kv7m-35wn` | [dataset page](https://cthru.data.socrata.com/d/kv7m-35wn) · [API](https://cthru.data.socrata.com/resource/kv7m-35wn.json) | none |
 | Revenue (collected) | CTHRU "Commonwealth Revenue Collections" | `kcy7-ivxi` | [dataset page](https://cthru.data.socrata.com/d/kcy7-ivxi) · [API](https://cthru.data.socrata.com/resource/kcy7-ivxi.json) | `fund_category_name = 'Budgeted Funds'` |
 
 Both datasets are on the Socrata portal at `cthru.data.socrata.com` and were pulled with the
@@ -31,7 +31,7 @@ sanity-check how line items are grouped.
 The fiscal year runs July 1 to June 30. FY2026 is July 1, 2025 to June 30, 2026.
 
 <!-- totals:start -->
-| Fiscal year | Enacted (GAA + supplementals) | Original GAA | Spent | Budgeted-fund revenue collected | Programs named / accounts in Other |
+| Fiscal year | Budgeted (GAA + supplementals) | Original GAA | Spent | Budgeted-fund revenue collected | Programs named / accounts in Other |
 |---|---:|---:|---:|---:|---:|
 | FY2024 | $57.11B | $55.30B | $62.49B | $66.45B | 271 / 678 |
 | FY2025 | $62.42B | $56.97B | $67.71B | $73.65B | 279 / 686 |
@@ -47,40 +47,46 @@ Each row of `kv7m-35wn` is one fiscal year, fund and appropriation account (line
 
 | Label on the site | Field | Meaning |
 |---|---|---|
-| **Enacted** | `total_enacted_budget_appropriation` | The General Appropriations Act (GAA) plus supplemental budgets passed during the year. |
+| **Budgeted** | `total_enacted_budget_appropriation` | The budget the Legislature passed: the General Appropriations Act (GAA) plus supplemental budgets passed during the year. CTHRU calls this "enacted". |
 | GAA (in data files as `gaa`) | `original_enacted_budget` | The amount in the original General Appropriations Act only. |
 | **Spent** | `total_expenses` | Expenses recorded against the account in the state accounting system. For FY2027, "Spent so far". |
 
-### Why "Spent" can be larger than "Enacted"
+### Why "Spent" can be larger than "Budgeted"
 
-Total spending in the dataset is larger than enacted appropriations in every closed year
-(FY2026: about $69.8B spent against $62.2B enacted). The main reasons:
+In every closed year the state spent more than the budget the Legislature passed
+(FY2026: about $69.8B spent against $62.2B budgeted). Most of the gap is spending that is
+allowed but never appears as a line in the budget. Some of it is programs that ran over.
 
-- **Other statutorily authorized spending** (`other_statutorily_authorized_spending`, about
-  $4.9B in FY2026). Some spending is authorized by standing law rather than by a line in the
-  budget act. The largest single example is the annual transfer to the Pension Liabilities
-  Fund (account 1595-1010, about $4.3B spent in FY2026 with $0 enacted).
-- **Retained revenue accounts.** Some accounts may spend revenue they collect, up to a ceiling
-  set in the budget.
-- **Expenses above the amount available.** In the FY2026 data as pulled, 61 account rows show
-  expenses larger than `total_available_for_spending`, about $2.5B in all. The largest is
-  MassHealth managed care (4000-0500): $7.41B spent against $6.01B enacted and available, with
-  the difference recorded as a negative "unexpended/reverted" balance. Gaps like this may be
-  addressed by later supplemental appropriations, which appear under Enacted once CTHRU records
-  them.
-- **Intragovernmental charges.** Some accounts (labelled "chargeback" or "internal service
-  fund") are paid by other state agencies for shared services such as IT, and the same dollars
-  appear once as the paying agency's expense and once as the providing account's expense.
-- **Prior-year money.** Balances continued from prior appropriations can be spent in the
-  current year.
+Allowed, but outside the budget:
+
+- **Spending required by other laws** (`other_statutorily_authorized_spending`, about $4.9B in
+  FY2026). Some payments are set by standing law instead of the yearly budget. The largest is
+  the annual payment into the Pension Liabilities Fund (account 1595-1010): about $4.3B spent in
+  FY2026, with $0 budgeted.
+- **Agencies spending fees they collect.** Some accounts ("retained revenue") may spend the
+  money they bring in, up to a ceiling set in the budget.
+- **Money carried over from earlier years.** Unspent balances from earlier budgets can be spent
+  this year.
+- **Double-counted internal payments.** When one agency pays another for shared services such
+  as IT (accounts labelled "chargeback" or "internal service fund"), the same dollars appear
+  once as each agency's expense.
+
+Programs that ran over:
+
+- **Spending above the budget line** (about $2.5B across 61 accounts in FY2026, as pulled). The
+  largest is MassHealth managed care (4000-0500): $7.41B spent against $6.01B budgeted. The
+  state pays the bills, and the Legislature usually covers the difference with a later
+  supplemental budget, which is added to "Budgeted" once CTHRU records it.
 
 The site shows both columns as reported and does not try to net these out.
 
 ## How spending is organized
 
-The hierarchy is **Secretariat → Department → Program**.
+The hierarchy is **Spending area → Department → Program**.
 
-- **Secretariat** is CTHRU's `cabinet_secretariat_name`. Names are shortened for readability in
+- **Spending area** is the Governor's cabinet secretariat (CTHRU's `cabinet_secretariat_name`), plus the
+  independent offices such as the Judiciary and the Legislature. The site says "spending area" as the
+  more familiar term. Names are shortened for readability in
   `etl/names.py` (for example "EXECUTIVE OFFICE FOR ADMINSTRATION & FINANCE" becomes
   "Administration & Finance", and "CTR/FAD ACCOUNTING ENTITIES" becomes "Statewide obligations",
   which holds pension, retiree-benefit and fund-to-fund transfers). The source's own spelling
@@ -102,11 +108,11 @@ school aid (7061-0008) is appropriated to the Department of Elementary & Seconda
 but the payments are recorded under the Department of Revenue. To show each program once, every
 row of an account is added up under a single home department:
 
-1. If the account is in `mapping.csv`, its `secretariat` and `department` columns decide.
+1. If the account is in `mapping.csv`, its `secretariat` (spending area) and `department` columns decide.
 2. Otherwise, the department holding the most enacted dollars for that account across FY2024–FY2027
    (ties broken by spending).
 
-This moves dollars between departments and secretariats relative to a raw CTHRU group-by, but
+This moves dollars between departments and spending areas relative to a raw CTHRU group-by, but
 never changes any total. The `notes` column of `mapping.csv` lists the other departments an
 account's rows were rolled up from.
 
@@ -123,7 +129,7 @@ small grant programs, earmarks, retained-revenue accounts and similar. The numbe
 inside each bucket is stored as `accounts` in `tree.json`. Nothing is dropped.
 
 On the Flow view, only the 40 largest named programs statewide are drawn; everything else in a
-secretariat is drawn as one **"Other {Secretariat}"** node. The full detail is always in the
+spending area is drawn as one **"Other {area}"** node. The full detail is always in the
 Scale and Changes views.
 
 ## How revenue is grouped
@@ -144,11 +150,28 @@ assigned to seven groups by `etl/revenue_groups.py`, using these rules in order:
 "Transfers & other" includes operating transfers between state funds (about $6.1B in FY2026),
 which are not new money entering state government.
 
-### Revenue to secretariat ribbons are proportional, not traced
+### Why revenue minus spending is not a surplus
+
+The Flow view shows revenue collected next to spending, and in closed years revenue is
+higher (FY2026: $73.2B taken in, $69.8B spent). That gap is not a surplus or a deficit. The
+two totals come from different state reports that count money differently:
+
+- **Revenue counts money moved between state funds.** "Transfers & other" includes about
+  $6.1B in FY2026 of operating transfers from one state fund to another. That is not new money
+  coming in.
+- **Spending counts some payments twice.** When one agency pays another for shared services,
+  both expenses are recorded (see "Why Spent can be larger than Budgeted" above).
+- **Timing differs.** Revenue is recorded when it arrives and spending when it is paid, and in
+  FY2027 the two reports are current through different dates.
+
+The state's official surplus or deficit comes from its year-end financial report, which nets
+these out. This site does not try to.
+
+### Revenue to spending-area ribbons are proportional, not traced
 
 Money in the General Fund is fungible: a dollar of income tax is not earmarked for a specific
-program. The Flow view's ribbons from revenue sources to secretariats are a **proportional
-allocation**: each secretariat's total is split across revenue groups in proportion to each
+program. The Flow view's ribbons from revenue sources to spending areas are a **proportional
+allocation**: each spending area's total is split across revenue groups in proportion to each
 group's share of total budgeted-fund collections that year. They show the overall mix, not
 where any specific dollar went. These links are marked `proportional: true` in `flows.json`.
 (Some revenue is in fact dedicated by law, such as the income surtax for the Education and
@@ -156,7 +179,7 @@ Transportation Fund; the allocation does not reflect that.)
 
 ## Highlight lens
 
-The **Highlight** control lets a reader pick any secretariats or departments and see them
+The **Highlight** control lets a reader pick any spending areas or departments and see them
 highlighted across the Flow, Scale and Changes views, with a subtotal. The selection lives in
 the page URL (`?hl=sec:EEA,dept:EHS/DMH`) so a highlighted view can be shared. The site ships no
 preset selections and takes no position on what should be highlighted.
@@ -174,7 +197,7 @@ anyone reusing the data; the site's interface does not read it.
   compare a partial year with full years.
 - **Closed years can still move slightly.** CTHRU is updated daily; late adjustments to FY2026
   can change totals after the fact. Re-running `make pull FORCE=1 build` picks them up.
-- **Supplemental budgets** are included in "Enacted" when CTHRU has recorded them. Supplemental
+- **Supplemental budgets** are included in "Budgeted" when CTHRU has recorded them. Supplemental
   budgets passed after a pull are not reflected until the next pull.
 - **Off-budget trusts and non-budgeted funds** are outside this picture. The spending dataset
   covers appropriated accounts and other spending authorizations recorded in the state
@@ -196,7 +219,7 @@ anyone reusing the data; the site's interface does not read it.
   totals as reported. In the Flow view, revenue node labels show the amount collected, while the
   ribbons are scaled to total spending.
 - **Rounding.** Values are rounded to whole dollars at the program level; departments,
-  secretariats and the statewide total are exact sums of the rounded programs, so they can differ
+  spending areas and the statewide total are exact sums of the rounded programs, so they can differ
   from a raw CTHRU sum by a few dollars.
 
 ## Reproducing the data

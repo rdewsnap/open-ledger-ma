@@ -11,6 +11,7 @@ const ScaleView = lazy(() => import('./views/ScaleView'));
 const ChangesView = lazy(() => import('./views/ChangesView'));
 // react-markdown and METHODOLOGY.md are only needed on this route.
 const MethodologyPage = lazy(() => import('./components/methodology/MethodologyPage'));
+const SourceView = lazy(() => import('./views/SourceView'));
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -74,6 +75,14 @@ export function App() {
               element={
                 <Lazy eyebrow="Methodology" title="Where every number comes from">
                   <MethodologyPage />
+                </Lazy>
+              }
+            />
+            <Route
+              path="source"
+              element={
+                <Lazy eyebrow="Source rows" title="The state's rows behind a number">
+                  <SourceView />
                 </Lazy>
               }
             />

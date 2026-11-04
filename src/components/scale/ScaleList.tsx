@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { accountOf, socrataRowsUrl } from '../../lib/data';
+import { accountOf } from '../../lib/data';
 import { COLORS } from '../../lib/flowModel';
 import { formatMoney, formatShare } from '../../lib/format';
 import { cellFill, isHighlighted, type HighlightSet, type ScaleNode } from '../../lib/treemap';
-import { useMeta } from '../../state/meta';
 import { HighlightDot } from '../HighlightDot';
+import { sourcePath } from '../../lib/source';
+import { Link } from 'react-router';
 
 type Props = {
   focus: ScaleNode;
@@ -18,7 +19,7 @@ type Props = {
 const CAP = 20;
 
 const KIND: Record<string, [string, string]> = {
-  sec: ['secretariat', 'secretariats'],
+  sec: ['spending area', 'spending areas'],
   dept: ['department', 'departments'],
   prog: ['program', 'programs'],
 };
@@ -30,7 +31,6 @@ function kindOf(id: string, n: number) {
 
 /** The focused node's children, ranked, with share bars and source-row links. */
 export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom }: Props) {
-  const { meta } = useMeta();
   const [expanded, setExpanded] = useState<string | null>(null);
   const showAll = expanded === focus.data.id;
   const kids = (focus.children ?? []).filter((c) => (c.value ?? 0) > 0);
@@ -53,7 +53,7 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
       <ul className="divide-y divide-rule border-b border-rule">
         {shown.map((c) => {
           const hl = isHighlighted(c, highlight);
-          const base = hl ? COLORS.moss : (colors.get(c.data.sec) ?? COLORS.sand3);
+          const base = hl ? COLORS.gold : (colors.get(c.data.sec) ?? COLORS.blue3);
           const value = c.value ?? 0;
           const zoomable = Boolean(c.children?.length);
           const acct = accountOf(c.data.id);
@@ -75,9 +75,9 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
                     className="group min-w-0 text-left"
                     aria-label={`${c.data.name}, ${formatMoney(value)}. Zoom in.`}
                   >
-                    <span className="flex items-center gap-1 group-hover:[&_span.truncate]:text-clay-text">
+                    <span className="flex items-center gap-1 group-hover:[&_span.truncate]:text-brick-text">
                       {name}
-                      <svg viewBox="0 0 10 10" className="h-2.5 w-2.5 shrink-0 text-ink-2 group-hover:text-clay-text" aria-hidden="true">
+                      <svg viewBox="0 0 10 10" className="h-2.5 w-2.5 shrink-0 text-ink-2 group-hover:text-brick-text" aria-hidden="true">
                         <path d="M3.5 2 6.5 5 3.5 8" stroke="currentColor" fill="none" strokeWidth="1.4" strokeLinecap="round" />
                       </svg>
                     </span>
@@ -112,9 +112,9 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
                     <span aria-hidden="true" className="px-1.5 text-ink-2/60">·</span>
                     <span className="code">{acct}</span>
                     <span aria-hidden="true" className="px-1.5 text-ink-2/60">·</span>
-                    <a href={socrataRowsUrl(meta.sources.spending, year, acct)} aria-label={`rows for ${c.data.name}, from the source dataset`}>
+                    <Link to={sourcePath({ ds: 'spending', years: [year], account: acct })} aria-label={`source rows for ${c.data.name}`}>
                       rows
-                    </a>
+                    </Link>
                   </>
                 ) : null}
               </p>

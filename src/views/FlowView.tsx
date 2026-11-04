@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { FlowList } from '../components/FlowList';
 import { HighlightCallout } from '../components/HighlightCallout';
+import { OverBudgetNote } from '../components/OverBudgetNote';
 import { SankeyChart } from '../components/SankeyChart';
 import { SourceStrip } from '../components/SourceStrip';
 import { DataMissingError, loadFlows, loadTree, usingFixture } from '../lib/data';
-import { ProgramTable } from '../components/ProgramTable';
+import { FlowBreakdown } from '../components/FlowBreakdown';
 import { buildFlowModel } from '../lib/flowModel';
 import { highlightSet, highlightSubtotal } from '../lib/highlight';
 import { formatMoney, fyLong, fyShort, longDate, partialLabel } from '../lib/format';
@@ -19,15 +21,18 @@ export function FlowView() {
   const { hl, measure, setMeasure, setHighlight } = useLedgerParams();
   const wide = useMediaQuery('(min-width: 640px)');
   const [ref, width] = useWidth<HTMLDivElement>();
-  // Focus is keyed to the data it was chosen on, so it clears when year/measure change.
+  // Focus (the expanded spending area) and the selection (the node in the breakdown)
+  // are keyed to the data they were chosen on, so they clear when year/measure change.
   const dataKey = `${year}:${measure}`;
-  const [focusState, setFocusState] = useState<{ key: string; id: string | null }>({
+  const [pick, setPick] = useState<{ key: string; focus: string | null; selected: string | null }>({
     key: dataKey,
-    id: null,
+    focus: null,
+    selected: null,
   });
-  const focus = focusState.key === dataKey ? focusState.id : null;
+  const focus = pick.key === dataKey ? pick.focus : null;
+  const selected = pick.key === dataKey ? pick.selected : null;
   const setFocus = useCallback(
-    (id: string | null) => setFocusState({ key: dataKey, id }),
+    (id: string | null) => setPick({ key: dataKey, focus: id, selected: id }),
     [dataKey],
   );
 
@@ -44,13 +49,13 @@ export function FlowView() {
     [treeData, highlight, highlighting, measure],
   );
 
-  // Esc clears the focused secretariat.
+  // Esc clears the expanded area and the selection.
   useEffect(() => {
-    if (!focus) return;
+    if (!focus && !selected) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFocus(null);
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [focus, setFocus]);
+  }, [focus, selected, setFocus]);
 
   const narrow = width > 0 && width < 960;
   const model = useMemo(
@@ -74,13 +79,27 @@ export function FlowView() {
         : null,
     [flows, treeData, measure, revenueOrder, highlight],
   );
-  const focusEntry = focus ? model?.secretariats.find((x) => x.node.id === focus) : undefined;
+  // Any node can be selected; a top-level spending area also expands in the chart.
+  const setSelected = useCallback(
+    (id: string | null) => {
+      if (id?.startsWith('prog:office:')) id = id.replace('prog:office:', 'sec:');
+      if (id?.startsWith('sec:') && model?.nodes.some((n) => n.id === id)) return setFocus(id);
+      setPick((p) => ({ key: dataKey, focus: p.key === dataKey ? p.focus : null, selected: id }));
+    },
+    [dataKey, model, setFocus],
+  );
+  const panelId = selected ?? focus;
 
   const spentLabel = partial ? 'Spent so far' : 'Spent';
   const spendWord =
-    measure === 'enacted' ? 'enacted spending' : partial ? 'spending so far' : 'spending';
+    measure === 'enacted' ? 'budgeted spending' : partial ? 'spending so far' : 'spending';
   const yearLabel = partial ? partialLabel(year, partial) : fyLong(year);
-  const focusName = focus ? model?.nodes.find((n) => n.id === focus)?.name : null;
+  const panelName = panelId
+    ? (model?.nodes.find((n) => n.id === panelId)?.name ??
+      treeData?.children?.find((c) => c.id === panelId)?.name ??
+      listModel?.secretariats.find((x) => x.node.id === panelId)?.node.name ??
+      null)
+    : null;
 
   const dek = (() => {
     if (flows.status !== 'ready') return null;
@@ -93,23 +112,24 @@ export function FlowView() {
     if (measure === 'enacted') {
       return (
         <>
-          For {fyLong(year)}, the Legislature appropriated{' '}
-          <span className="num text-ink">{sp}</span> in the enacted budget. The Commonwealth{' '}
-          {partial ? 'has collected' : 'collected'} <span className="num text-ink">{rev}</span> in
-          budgeted-fund revenue{partial ? ` so far${revThrough}` : ''}.
+          For {fyLong(year)}, the Legislature budgeted{' '}
+          <span className="num text-ink">{sp}</span>. The state{' '}
+          {partial ? 'has taken in' : 'took in'} <span className="num text-ink">{rev}</span>
+          {partial ? ` so far${revThrough}` : ''}.
         </>
       );
     }
     return partial ? (
       <>
-        So far in {fyLong(year)}, the Commonwealth has collected{' '}
-        <span className="num text-ink">{rev}</span> in budgeted-fund revenue{revThrough} and spent{' '}
+        So far in {fyLong(year)}, the state has taken in{' '}
+        <span className="num text-ink">{rev}</span>{revThrough} and spent{' '}
         <span className="num text-ink">{sp}</span>.
       </>
     ) : (
       <>
-        In {fyLong(year)}, the Commonwealth collected <span className="num text-ink">{rev}</span> in
-        budgeted-fund revenue and spent <span className="num text-ink">{sp}</span>.
+        In {fyLong(year)}, the state took in <span className="num text-ink">{rev}</span> and spent{' '}
+        <span className="num text-ink">{sp}</span>.
+        <OverBudgetNote tree={treeData} measure={measure} partial={!!partial} />
       </>
     );
   })();
@@ -117,7 +137,7 @@ export function FlowView() {
   return (
     <section className="py-8 md:py-12">
       {usingFixture() ? (
-        <p className="mb-6 rounded-[8px] border border-clay/30 bg-clay-2/30 px-3 py-2 text-[0.8rem] text-ink">
+        <p className="mb-6 rounded-[8px] border border-brick/30 bg-brick-2/30 px-3 py-2 text-[0.8rem] text-ink">
           <strong className="font-semibold">Development fixture.</strong> /data is not built yet, so
           these are illustrative numbers, not real budget data.
         </p>
@@ -136,21 +156,24 @@ export function FlowView() {
               aria-pressed={measure === m}
               onClick={() => setMeasure(m)}
             >
-              {m === 'enacted' ? 'Enacted' : spentLabel}
+              {m === 'enacted' ? 'Budgeted' : spentLabel}
             </button>
           ))}
         </div>
-        {wide && focusName ? (
+        {wide && panelId ? (
           <p className="flex flex-wrap items-baseline gap-x-2 text-[0.95rem] text-ink-2">
-            Showing programs in <strong className="font-semibold text-ink">{focusName}</strong>
+            Selected <strong className="font-semibold text-ink">{panelName ?? 'item'}</strong>
+            <a href="#breakdown" className="link">
+              Breakdown below
+            </a>
             <button type="button" onClick={() => setFocus(null)} className="link">
-              Show all
+              Clear
             </button>
             <span className="text-[0.85rem]">(Esc)</span>
           </p>
         ) : wide ? (
           <p className="text-[0.95rem] text-ink-2">
-            Hover for amounts. Click a secretariat to see its programs.
+            Click anything in the chart for a breakdown below it.
           </p>
         ) : null}
       </div>
@@ -175,13 +198,19 @@ export function FlowView() {
               ·
             </span>
             <span>
-              {measure === 'enacted' ? 'Enacted' : spentLabel}{' '}
+              {measure === 'enacted' ? 'Budgeted' : spentLabel}{' '}
               <span className="num text-ink">{formatMoney(flows.data.spendingTotal)}</span>
             </span>
-            <span aria-hidden="true" className="text-ink-2/60">
+            {/* Phones get a list, not ribbons. */}
+            <span aria-hidden="true" className="hidden text-ink-2/60 sm:inline">
               ·
             </span>
-            <span>ribbons are proportional</span>
+            <span className="hidden sm:inline">ribbons are proportional</span>
+            {/* Its own line, so a separator dot never ends a wrapped line. */}
+            <span className="basis-full">
+              The two totals are counted differently, so the gap is not a surplus or deficit (
+              <Link to="/methodology#why-revenue-minus-spending-is-not-a-surplus">why</Link>).
+            </span>
           </>
         ) : null}
       </p>
@@ -199,7 +228,7 @@ export function FlowView() {
         ) : flows.status === 'error' ? (
           <p className="rounded-[8px] border border-rule px-4 py-10 text-center text-[0.95rem] text-ink-2">
             {flows.error instanceof DataMissingError
-              ? `${measure === 'enacted' ? 'Enacted' : spentLabel} flows for ${fyLong(year)} have not been published yet.`
+              ? `${measure === 'enacted' ? 'Budgeted' : spentLabel} flows for ${fyLong(year)} have not been published yet.`
               : 'The data could not be loaded. Try again in a moment.'}
           </p>
         ) : wide && model && width > 0 ? (
@@ -209,8 +238,10 @@ export function FlowView() {
             highlighting={highlighting}
             focus={focus}
             onFocus={setFocus}
+            selected={selected}
+            onSelect={setSelected}
             spendWord={spendWord}
-            label={`Flow of ${fyLong(year)} money from revenue sources to secretariats to programs. Each node is focusable; secretariats can be expanded.`}
+            label={`Flow of ${fyLong(year)} money from revenue sources to spending areas to programs. Each node is focusable; spending areas can be expanded.`}
           />
         ) : !wide && listModel ? (
           <FlowList
@@ -222,20 +253,26 @@ export function FlowView() {
         ) : null}
       </div>
 
-      {wide && focusEntry ? (
-        <ProgramTable
-          sec={focusEntry.node}
-          programs={focusEntry.programs}
+      {wide && panelId && model && listModel ? (
+        <FlowBreakdown
+          key={panelId}
+          id={panelId}
+          model={model}
+          full={listModel}
+          tree={treeData}
           year={year}
-          measureLabel={measure === 'enacted' ? 'Enacted' : spentLabel}
+          measure={measure}
+          measureLabel={measure === 'enacted' ? 'Budgeted' : spentLabel}
+          spendWord={spendWord}
           highlighting={highlighting}
+          onSelect={setSelected}
           onClose={() => setFocus(null)}
         />
       ) : null}
 
       <p className="mt-6 max-w-[70ch] text-[0.95rem] text-ink-2">
         <span className="font-semibold text-ink">How to read this.</span> State revenue is pooled,
-        so the ribbons from each revenue source to each secretariat are proportional shares of its
+        so the ribbons from each revenue source to each spending area are proportional shares of its
         spending, not traced dollars.
       </p>
 

@@ -392,7 +392,7 @@ def fmt_b(value: float) -> str:
 
 def totals_table(meta: dict[str, Any]) -> str:
     """Markdown table of per-year totals for METHODOLOGY.md."""
-    lines = ["| Fiscal year | Enacted (GAA + supplementals) | Original GAA | Spent | Budgeted-fund revenue collected | Programs named / accounts in Other |",
+    lines = ["| Fiscal year | Budgeted (GAA + supplementals) | Original GAA | Spent | Budgeted-fund revenue collected | Programs named / accounts in Other |",
              "|---|---:|---:|---:|---:|---:|"]
     for y in meta["years"]:
         t = meta["totals"][str(y)]

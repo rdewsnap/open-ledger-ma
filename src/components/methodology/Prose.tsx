@@ -28,7 +28,7 @@ const components: Components = {
   li: ({ children }) => <li className="leading-[1.65]">{children}</li>,
   strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
   em: ({ children }) => <em className="italic text-ink-2">{children}</em>,
-  blockquote: ({ children }) => <blockquote className="mt-4 border-l-2 border-clay pl-4 text-ink-2">{children}</blockquote>,
+  blockquote: ({ children }) => <blockquote className="mt-4 border-l-2 border-brick pl-4 text-ink-2">{children}</blockquote>,
   hr: () => <hr className="my-8 border-rule" />,
   code: ({ children, className }) => (
     <code className={`${className ?? ''} code rounded-[4px] bg-paper-2 px-1 py-0.5 break-words`}>{children}</code>
