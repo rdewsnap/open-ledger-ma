@@ -7,6 +7,7 @@ import { OverBudgetNote } from '../components/OverBudgetNote';
 import { ScaleList } from '../components/scale/ScaleList';
 import { Treemap } from '../components/scale/Treemap';
 import { SourceStrip } from '../components/SourceStrip';
+import { areaDescription } from '../lib/areas';
 import { capitalFor } from '../lib/capital';
 import { DataMissingError, loadTree, usingFixture } from '../lib/data';
 import { formatMoney, formatShare, fyLong, fyShort, longDate, monthsInto, partialLabel } from '../lib/format';
@@ -241,6 +242,10 @@ export function ScaleView() {
           </>
         ) : null}
       </div>
+
+      {focus?.depth === 1 && areaDescription(focus.data.id) ? (
+        <p className="mt-1 max-w-[70ch] text-[0.95rem] text-ink-2">{areaDescription(focus.data.id)}</p>
+      ) : null}
 
       {/* Reserve the treemap's height before the tree arrives (CLS). */}
       <div ref={ref} className="mt-3" style={{ minHeight: tree.status === 'error' ? 200 : height }}>

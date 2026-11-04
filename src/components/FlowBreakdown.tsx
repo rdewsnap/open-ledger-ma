@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { areaDescription } from '../lib/areas';
 import { capitalFor } from '../lib/capital';
 import { accountOf } from '../lib/data';
 import { sourcePath } from '../lib/source';
@@ -298,6 +299,9 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
           {kind === 'revenue' ? 'collected' : measureLabel.toLowerCase()} in {fyLong(year)} · {shareLine}
         </span>
       </p>
+      {kind === 'secretariat' && areaDescription(id) ? (
+        <p className="mt-3 max-w-[62ch] text-[0.95rem] text-ink">{areaDescription(id)}</p>
+      ) : null}
       {kind === 'secretariat' ? (
         <p className="mt-2 max-w-[62ch] text-[0.85rem] text-ink-2">
           Operating budget only.{' '}
