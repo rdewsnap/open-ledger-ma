@@ -54,7 +54,7 @@ export function ChangeTable({ rows, max, labelA, labelB, sortKey, sortDir, highl
                 ) : (
                   <span className="truncate text-ink-2">{r.name}</span>
                 )}
-                {r.bucket ? <BucketTag /> : null}
+                {r.bucket ? <BucketTag accounts={r.accounts} /> : null}
               </span>
               <span className="block truncate text-[0.85rem] text-ink-2">{r.path}</span>
             </td>

@@ -31,6 +31,8 @@ export type TreeNode = {
   gaa: number;
   actual: number;
   other?: true;
+  /** On an "Other {Department}" bucket: how many line items it adds together. */
+  accounts?: number;
   children?: TreeNode[];
 };
 
@@ -67,6 +69,8 @@ export type DiffRow = {
   secId?: string;
   deptId?: string;
   code?: string;
+  /** On an "Other {Department}" row: how many line items it combines. */
+  accounts?: number;
   enactedA: number;
   enactedB: number;
   actualA: number;

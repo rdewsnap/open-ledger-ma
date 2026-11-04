@@ -74,7 +74,7 @@ type Node = {
 ```
 ### `data/diff/fy{A}_fy{B}.json`
 ```ts
-{ a: 2026, b: 2027, rows: { id, name, path: string /* "Sec › Dept" */, secId: string, deptId: string, code?,
+{ a: 2026, b: 2027, rows: { id, name, path: string /* "Sec › Dept" */, secId: string, deptId: string, code?, accounts?,
     enactedA, enactedB, actualA, actualB, dEnacted, dActual, pctEnacted: number|null, pctActual: number|null,
     conservation?: true }[] }
 // one row per program node (incl. Other buckets). Programs present in only one year get 0 for the missing year.
@@ -111,7 +111,8 @@ clarifications except item 1.
    `rev:sales`, `rev:corporate`, `rev:othertax`, `rev:federal`, `rev:fees`, `rev:transfers`
    (also listed in `meta.revenueGroups` in display order).
 4. **Tree "Other" buckets** are per department: `prog:other:{SEC}/{DEPT}`, name
-   "Other {Department}", `other: true`, plus `accounts` (number of line items summed in).
+   "Other {Department}", `other: true`, plus `accounts` (number of line items summed in). Diff
+   rows for these buckets carry the same `accounts` (from the later year when both exist).
    Secretariat nodes also carry `raw` and `code` (the key). Accounts with $0 enacted and $0 spent
    in a year are omitted from that year's tree.
 5. **One home per account.** CTHRU records some accounts under several departments (e.g. Chapter

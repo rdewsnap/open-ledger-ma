@@ -57,7 +57,7 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
           const value = c.value ?? 0;
           const zoomable = Boolean(c.children?.length);
           const acct = accountOf(c.data.id);
-          const accounts = (c.data as { accounts?: number }).accounts;
+          const accounts = c.data.accounts;
           const pct = max > 0 ? Math.max(0.6, (value / max) * 100) : 0;
           const name = (
             <span className="flex min-w-0 items-center gap-1.5 text-[1rem] leading-snug text-ink">

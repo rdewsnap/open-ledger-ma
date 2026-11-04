@@ -27,7 +27,7 @@ export function ChangeList({ rows, max, highlighting, rowsHref }: Props) {
             ) : (
               <span className="min-w-0 truncate text-ink-2">{r.name}</span>
             )}
-            {r.bucket ? <BucketTag /> : null}
+            {r.bucket ? <BucketTag accounts={r.accounts} /> : null}
           </p>
           <p className="num mt-0.5 text-[0.875rem] text-ink-2">
             {formatMoney(r.a)} → {formatMoney(r.b)} <span aria-hidden="true">·</span>{' '}

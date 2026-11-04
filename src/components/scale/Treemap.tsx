@@ -152,7 +152,13 @@ export function Treemap({ focus, width, height, colors, highlight, total, totalL
       parentAmount: parent?.value ?? total,
       parentName: parent && parent.depth > 0 ? parent.data.name : '',
       highlighted: paint.get(c.id)?.hl ?? false,
-      hint: zoomable ? 'Click or press Enter to zoom in.' : c.depth === 2 ? 'Click to zoom in.' : undefined,
+      hint: zoomable
+        ? 'Click or press Enter to zoom in.'
+        : c.depth === 2
+          ? 'Click to zoom in.'
+          : n.data.accounts
+            ? `Adds together ${n.data.accounts} smaller line item${n.data.accounts === 1 ? '' : 's'} in this department.`
+            : undefined,
     };
   };
 

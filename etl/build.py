@@ -320,11 +320,11 @@ def build_flows(tree: dict[str, Any], revenue: pd.Series, measure: str) -> dict[
 
 
 def program_index(tree: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """Map program id -> {name, path, code, enacted, actual, conservation} for a tree."""
+    """Map program id -> {name, path, code, accounts, enacted, actual, conservation} for a tree."""
     out = {}
     for sec, dept, prog in iter_programs(tree):
         out[prog["id"]] = {"name": prog["name"], "path": f"{sec['name']} › {dept['name']}",
-                           "secId": sec["id"], "deptId": dept["id"], "code": prog.get("code"), "enacted": prog["enacted"], "actual": prog["actual"],
+                           "secId": sec["id"], "deptId": dept["id"], "code": prog.get("code"), "accounts": prog.get("accounts"), "enacted": prog["enacted"], "actual": prog["actual"],
                            "conservation": bool(prog.get("conservation"))}
     return out
 
@@ -347,6 +347,8 @@ def build_diff(a: int, b: int, tree_a: dict[str, Any], tree_b: dict[str, Any]) -
                "secId": ref["secId"], "deptId": ref["deptId"]}
         if ref.get("code"):
             row["code"] = ref["code"]
+        if ref.get("accounts"):
+            row["accounts"] = ref["accounts"]
         row.update({"enactedA": ea, "enactedB": eb, "actualA": aa, "actualB": ab,
                     "dEnacted": eb - ea, "dActual": ab - aa,
                     "pctEnacted": _pct(ea, eb), "pctActual": _pct(aa, ab)})

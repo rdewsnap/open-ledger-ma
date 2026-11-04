@@ -145,7 +145,9 @@ export function SankeyChart({ model, width, highlighting, focus, onFocus, select
           ? focus === n.id
             ? 'Click or press Enter to show all spending areas again.'
             : 'Click or press Enter for its programs and a breakdown.'
-          : 'Click or press Enter for details.',
+          : n.bucket
+            ? 'Smaller programs too small to draw on their own, added together. Click or press Enter for the full list.'
+            : 'Click or press Enter for details.',
     };
   };
   const linkTip = (l: L): TipData => ({

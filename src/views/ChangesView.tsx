@@ -298,7 +298,7 @@ export function ChangesView() {
         <span className="font-semibold text-ink">How to read this.</span> Bars run right for
         increases and left for decreases, scaled to the largest change in the list.{' '}
         {measure === 'enacted' ? 'Budgeted' : spentB} amounts; “new” means the program had $0 in{' '}
-        {fyLong(from)}. Items marked “bucket” sum a department’s smaller line items.
+        {fyLong(from)}. Rows named “Other …” add together a department’s smaller line items; the tag says how many.
       </p>
 
       <SourceStrip years={[from, to]} />

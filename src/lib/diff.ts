@@ -49,6 +49,8 @@ export type ChangeRow = {
   pct: number | null;
   status: ChangeStatus;
   bucket: boolean;
+  /** For a bucket: how many line items it combines, when the data file says. */
+  accounts: number | null;
   /** This program's id plus any secretariat/department ids derivable from it. */
   nodeIds: string[];
   /** In the current highlight set (see `isHighlighted`). */
@@ -122,6 +124,7 @@ export function toChangeRows(rows: DiffRow[], measure: Measure, highlight: Reado
       pct: a === 0 ? null : (b - a) / Math.abs(a),
       status: statusOf(a, b),
       bucket,
+      accounts: bucket ? (r.accounts ?? null) : null,
       nodeIds,
       highlighted: isHighlighted(nodeIds, highlight),
       haystack: fold(`${r.name} ${sec} ${dept} ${account ?? ''}`),
