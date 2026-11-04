@@ -211,7 +211,7 @@ export function FlowView() {
             <span aria-hidden="true" className="hidden text-ink-2/60 sm:inline">
               ·
             </span>
-            <span className="hidden sm:inline">ribbons are proportional</span>
+            <span className="hidden sm:inline">band widths are to scale</span>
             {/* Its own line, so a separator dot never ends a wrapped line. */}
             <span className="basis-full">
               The two totals are counted differently, so the gap is not a surplus or deficit (
@@ -277,9 +277,11 @@ export function FlowView() {
       ) : null}
 
       <p className="mt-6 max-w-[70ch] text-[0.95rem] text-ink-2">
-        <span className="font-semibold text-ink">How to read this.</span> State revenue is pooled,
-        so the ribbons from each revenue source to each spending area are proportional shares of its
-        spending, not traced dollars.
+        <span className="font-semibold text-ink">How to read this.</span> Money flows left to
+        right: revenue sources, then spending areas (the Governor’s cabinet offices, plus independent
+        offices such as the courts), then the largest programs (single budget line items). Band
+        widths are drawn to scale. The state pools its revenue, so the bands from each source show
+        its share of the pool, not where its own dollars went.
       </p>
 
       <SourceStrip showRevenue />

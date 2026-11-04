@@ -262,6 +262,13 @@ export function ScaleView() {
         />
       ) : null}
 
+      <p className="mt-6 max-w-[70ch] text-[0.95rem] text-ink-2">
+        <span className="font-semibold text-ink">How to read this.</span> Each large box is a
+        spending area: one of the Governor’s cabinet offices, or an independent office such as the
+        courts. Inside are its departments, and inside those, its programs (single budget line
+        items). Box sizes are drawn to scale.
+      </p>
+
       <SourceStrip />
     </section>
   );

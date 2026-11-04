@@ -167,10 +167,10 @@ two totals come from different state reports that count money differently:
 The state's official surplus or deficit comes from its year-end financial report, which nets
 these out. This site does not try to.
 
-### Revenue to spending-area ribbons are proportional, not traced
+### Revenue bands show shares of the pool, not traced dollars
 
 Money in the General Fund is fungible: a dollar of income tax is not earmarked for a specific
-program. The Flow view's ribbons from revenue sources to spending areas are a **proportional
+program. The Flow view's bands from revenue sources to spending areas are a **proportional
 allocation**: each spending area's total is split across revenue groups in proportion to each
 group's share of total budgeted-fund collections that year. They show the overall mix, not
 where any specific dollar went. These links are marked `proportional: true` in `flows.json`.
@@ -217,7 +217,7 @@ anyone reusing the data; the site's interface does not read it.
   have different scopes (spending includes other statutory authorizations and intragovernmental
   charges; revenue includes transfers between funds) and different timing. The site shows both
   totals as reported. In the Flow view, revenue node labels show the amount collected, while the
-  ribbons are scaled to total spending.
+  bands are scaled to total spending.
 - **Rounding.** Values are rounded to whole dollars at the program level; departments,
   spending areas and the statewide total are exact sums of the rounded programs, so they can differ
   from a raw CTHRU sum by a few dollars.

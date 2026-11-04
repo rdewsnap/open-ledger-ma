@@ -134,8 +134,8 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
         onPick={onSelect}
         note={`${PROPORTIONAL_NOTE} ${
           paysFor < amount
-            ? `Ribbons are scaled to total spending, which is counted differently from revenue, so this source's share of spending (${formatMoney(paysFor)}) is less than it collected.`
-            : `Ribbons are scaled to total spending, which is counted differently from revenue, so this source's share of spending (${formatMoney(paysFor)}) is more than it collected.`
+            ? `Bands are scaled to total spending, which is counted differently from revenue, so this source's share of spending (${formatMoney(paysFor)}) is less than it collected.`
+            : `Bands are scaled to total spending, which is counted differently from revenue, so this source's share of spending (${formatMoney(paysFor)}) is more than it collected.`
         }`}
       />
     );
