@@ -7,7 +7,7 @@ import { ScaleList } from '../components/scale/ScaleList';
 import { Treemap } from '../components/scale/Treemap';
 import { SourceStrip } from '../components/SourceStrip';
 import { DataMissingError, loadTree, usingFixture } from '../lib/data';
-import { formatMoney, formatShare, fyLong, fyShort, partialLabel } from '../lib/format';
+import { formatMoney, formatShare, fyLong, fyShort, longDate, monthsInto, partialLabel } from '../lib/format';
 import { highlightSet } from '../lib/highlight';
 import {
   buildHierarchy,
@@ -130,7 +130,15 @@ export function ScaleView() {
         </>
       ) : partial ? (
         <>
-          So far in {fyLong(year)} the state has spent {amt}.
+          So far in {fyLong(year)} the state has spent {amt}
+          {treeData ? (
+            <>
+              {' '}
+              of its <span className="num text-ink">{formatMoney(treeData.enacted)}</span> budget
+            </>
+          ) : null}
+          , about {monthsInto(year, partial.through)} into a year that runs to{' '}
+          {longDate(`${year}-06-30`)}.
         </>
       ) : (
         <>

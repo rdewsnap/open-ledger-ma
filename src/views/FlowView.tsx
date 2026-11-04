@@ -9,7 +9,7 @@ import { DataMissingError, loadFlows, loadTree, usingFixture } from '../lib/data
 import { FlowBreakdown } from '../components/FlowBreakdown';
 import { buildFlowModel } from '../lib/flowModel';
 import { highlightSet, highlightSubtotal } from '../lib/highlight';
-import { formatMoney, fyLong, fyShort, longDate, partialLabel } from '../lib/format';
+import { formatMoney, fyLong, fyShort, longDate, monthsInto, partialLabel } from '../lib/format';
 import type { Measure } from '../lib/types';
 import { useMediaQuery, useWidth } from '../state/media';
 import { useMeta } from '../state/meta';
@@ -105,9 +105,9 @@ export function FlowView() {
     if (flows.status !== 'ready') return null;
     const f = flows.data;
     const rev = formatMoney(f.revenueTotal);
-    const revThrough = partial?.revenueThrough
-      ? ` (through ${longDate(partial.revenueThrough)})`
-      : '';
+    const revSoFar = partial?.revenueThrough
+      ? ` in the first ${monthsInto(year, partial.revenueThrough)} (through ${longDate(partial.revenueThrough)})`
+      : ' so far';
     const sp = formatMoney(f.spendingTotal);
     if (measure === 'enacted') {
       return (
@@ -115,15 +115,21 @@ export function FlowView() {
           For {fyLong(year)}, the Legislature budgeted{' '}
           <span className="num text-ink">{sp}</span>. The state{' '}
           {partial ? 'has taken in' : 'took in'} <span className="num text-ink">{rev}</span>
-          {partial ? ` so far${revThrough}` : ''}.
+          {partial ? revSoFar : ''}.
         </>
       );
     }
     return partial ? (
       <>
         So far in {fyLong(year)}, the state has taken in{' '}
-        <span className="num text-ink">{rev}</span>{revThrough} and spent{' '}
-        <span className="num text-ink">{sp}</span>.
+        <span className="num text-ink">{rev}</span> and spent{' '}
+        <span className="num text-ink">{sp}</span>. The year runs to{' '}
+        {longDate(`${year}-06-30`)}, so these cover only about {monthsInto(year, partial.through)}{' '}
+        of spending (through {longDate(partial.through)})
+        {partial.revenueThrough
+          ? ` and ${monthsInto(year, partial.revenueThrough)} of revenue (through ${longDate(partial.revenueThrough)})`
+          : ''}
+        .
       </>
     ) : (
       <>

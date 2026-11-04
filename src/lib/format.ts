@@ -87,6 +87,21 @@ export function longDate(isoDate: string): string {
   return month ? `${month} ${Number(m[3])}, ${m[1]}` : isoDate;
 }
 
+const COUNT_WORDS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+
+/**
+ * How far into fiscal year `year` (July 1 to June 30) a cut-off date falls, to the
+ * nearest month: (2027, "2026-11-03") → "four months".
+ */
+export function monthsInto(year: number, isoDate: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
+  if (!m) return '';
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const days = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+  const n = Math.min(12, Math.max(1, Math.round((y - (year - 1)) * 12 + (mo - 7) + d / days)));
+  return `${COUNT_WORDS[n - 1]} ${n === 1 ? 'month' : 'months'}`;
+}
+
 /** "FY27 in progress — spending through Nov 3, 2026; revenue through Sep 30, 2026" */
 export function partialLabel(
   year: number,

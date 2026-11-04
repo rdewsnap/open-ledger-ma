@@ -18,7 +18,7 @@ import {
   toChangeRows,
   type SortKey,
 } from '../lib/diff';
-import { formatMoney, fyLong, fyShort, longDate } from '../lib/format';
+import { formatMoney, fyLong, fyShort, longDate, monthsInto } from '../lib/format';
 import type { Measure } from '../lib/types';
 import { useMediaQuery } from '../state/media';
 import { useMeta } from '../state/meta';
@@ -131,14 +131,15 @@ export function ChangesView() {
     if (measure === 'enacted') {
       return (
         <>
-          Between {fyLong(from)} and {fyLong(to)}, enacted appropriations moved from {a} to {b}.
+          Between {fyLong(from)} and {fyLong(to)}, the budget moved from {a} to {b}.
         </>
       );
     }
     if (partialB) {
       return (
         <>
-          Spending was {a} in {fyLong(from)}. So far in {fyLong(to)}, it is {b}.
+          Spending was {a} in all of {fyLong(from)}. {fyLong(to)} is only about{' '}
+          {monthsInto(to, partialB.through)} in, and its spending so far is {b}.
         </>
       );
     }
@@ -190,8 +191,12 @@ export function ChangesView() {
 
       {partialB && measure === 'actual' ? (
         <p className="mt-4 rounded-[8px] border border-brick/30 bg-brick-2/30 px-3 py-2 text-[0.9rem] text-ink">
-          {fyShort(to)} spending is through {longDate(partialB.through)}; this compares a partial
-          year with a full one.
+          <strong className="font-semibold">Not a like-for-like comparison.</strong>{' '}
+          {fyShort(to)} spending covers only {monthsInto(to, partialB.through)} (through{' '}
+          {longDate(partialB.through)}), so most programs will look like cuts that are not real.{' '}
+          <button type="button" className="link" onClick={() => setMeasure('enacted')}>
+            Compare budgets instead
+          </button>
         </p>
       ) : null}
 

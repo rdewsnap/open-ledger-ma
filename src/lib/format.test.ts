@@ -8,6 +8,7 @@ import {
   fyShort,
   monthYear,
   longDate,
+  monthsInto,
   partialLabel,
 } from './format';
 
@@ -77,5 +78,11 @@ describe('partial-year labels', () => {
     expect(
       partialLabel(2027, { through: '2026-11-03', label: 'in progress', revenueThrough: '2026-09-30' }),
     ).toBe('FY27 in progress — spending through Nov 3, 2026; revenue through Sep 30, 2026');
+  });
+  it('says how many months into the fiscal year a cut-off falls', () => {
+    expect(monthsInto(2027, '2026-11-03')).toBe('four months');
+    expect(monthsInto(2027, '2026-09-30')).toBe('three months');
+    expect(monthsInto(2027, '2026-07-02')).toBe('one month');
+    expect(monthsInto(2027, '2027-06-30')).toBe('twelve months');
   });
 });
