@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { FlowList } from '../components/FlowList';
 import { HighlightCallout } from '../components/HighlightCallout';
 import { OverBudgetNote } from '../components/OverBudgetNote';
 import { PhoneSankey } from '../components/PhoneSankey';
@@ -84,9 +83,9 @@ export function FlowView() {
   const phoneModel = useMemo(
     () =>
       !wide && flows.status === 'ready'
-        ? buildFlowModel(flows.data, { topPrograms: 0, minSecShare: 0.016, highlight, tree: treeData, measure, revenueOrder })
+        ? buildFlowModel(flows.data, { focus, focusPrograms: 10, topPrograms: 0, minSecShare: 0.016, highlight, tree: treeData, measure, revenueOrder })
         : null,
-    [wide, flows, highlight, treeData, measure, revenueOrder],
+    [wide, flows, focus, highlight, treeData, measure, revenueOrder],
   );
   // Any node can be selected; a top-level spending area also expands in the chart.
   const setSelected = useCallback(
@@ -231,11 +230,11 @@ export function FlowView() {
 
       {/*
         Reserve the chart's rendered height before data arrives (CLS): the Sankey
-        is 680–780px tall on tablets/desktops; on phones the small chart plus the list is about 2,550px.
+        is 680–780px tall on tablets/desktops; on phones the step-by-step chart is about 450px.
       */}
       <div
         ref={ref}
-        className={`mt-4 ${flows.status === 'error' ? '' : 'min-h-[2500px] sm:min-h-[680px] lg:min-h-[760px]'}`}
+        className={`mt-4 ${flows.status === 'error' ? '' : 'min-h-[480px] sm:min-h-[680px] lg:min-h-[760px]'}`}
       >
         {flows.status === 'loading' ? (
           <p className="py-24 text-center text-[0.9rem] text-ink-2">Loading {fyShort(year)}…</p>
@@ -257,34 +256,29 @@ export function FlowView() {
             spendWord={spendWord}
             label={`Flow of ${fyLong(year)} money from revenue sources to spending areas to programs. Each node is focusable; spending areas can be expanded.`}
           />
-        ) : !wide && listModel ? (
-          <>
-            {phoneModel && width > 0 ? (
-              <div className="mb-10">
-                <PhoneSankey
-                  model={phoneModel}
-                  width={width}
-                  highlighting={highlighting}
-                  spendWord={spendWord}
-                  label={`Flow of ${fyLong(year)} money from revenue sources to spending areas. The lists below give the same figures.`}
-                />
-              </div>
-            ) : null}
-            <FlowList
-              model={listModel}
-              highlighting={highlighting}
-              spendWord={spendWord}
-              year={year}
-            />
-          </>
+        ) : !wide && phoneModel && width > 0 ? (
+          <PhoneSankey
+            model={phoneModel}
+            width={width}
+            highlighting={highlighting}
+            spendWord={spendWord}
+            focus={focus}
+            selected={selected}
+            onPick={(n) => {
+              if (n.kind === 'secretariat' && n.id !== focus) setFocus(n.id);
+              else setPick((p) => ({ key: dataKey, focus, selected: p.selected === n.id && n.id !== focus ? null : n.id }));
+            }}
+            onBack={() => setFocus(null)}
+            label={`Flow of ${fyLong(year)} money${focus ? '' : ' from revenue sources to spending areas'}. Each label is a button.`}
+          />
         ) : null}
       </div>
 
-      {wide && panelId && model && listModel ? (
+      {panelId && (wide ? model : phoneModel) && listModel ? (
         <FlowBreakdown
           key={panelId}
           id={panelId}
-          model={model}
+          model={(wide ? model : phoneModel)!}
           full={listModel}
           tree={treeData}
           year={year}
@@ -303,7 +297,7 @@ export function FlowView() {
         offices such as the courts)
         {wide
           ? ', then the largest programs (single budget line items)'
-          : '. On a phone the chart stops at spending areas; tap one in the list to see its programs'}
+          : '. On a phone the chart shows one step at a time; tap a spending area to see its programs'}
         . Band widths are drawn to scale. The state pools its revenue, so the bands from each source show
         its share of the pool, not where its own dollars went.
       </p>

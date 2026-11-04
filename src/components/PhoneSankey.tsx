@@ -7,12 +7,18 @@ type N = SankeyNode<ModelNode, ModelLink>;
 type L = SankeyLink<ModelNode, ModelLink>;
 
 type Props = {
-  /** A model built for phones: only its revenue and spending-area columns are drawn. */
+  /** A model built for phones. Unfocused: revenue → spending areas. Focused: that area → its programs. */
   model: FlowModel;
   width: number;
   highlighting: boolean;
   spendWord: string;
   label: string;
+  /** The spending area being shown, or null for the first step. */
+  focus: string | null;
+  /** Lit node (its bands traced, its breakdown below). */
+  selected: string | null;
+  onPick: (node: ModelNode) => void;
+  onBack: () => void;
 };
 
 const BAR = 8;
@@ -38,20 +44,22 @@ const touches = (l: L, id: string) => (l.source as N).id === id || (l.target as 
  * so the full width goes to the ribbons. Tap an end to trace its bands; the list
  * below the chart carries the detail and the programs.
  */
-export function PhoneSankey({ model, width, highlighting, spendWord, label }: Props) {
-  const [lit, setLit] = useState<string | null>(null);
+export function PhoneSankey({ model, width, highlighting, spendWord, label, focus, selected, onPick, onBack }: Props) {
   const [kbFocus, setKbFocus] = useState<string | null>(null);
 
   const layout = useMemo(() => {
-    const nodes = model.nodes.filter((n) => n.kind !== 'program');
+    const nodes = focus
+      ? model.nodes.filter((n) => n.id === focus || (n.kind === 'program' && n.parent === focus))
+      : model.nodes.filter((n) => n.kind !== 'program');
     const ids = new Set(nodes.map((n) => n.id));
     const links = model.links.filter((l) => ids.has(l.source) && ids.has(l.target));
-    const secCount = nodes.filter((n) => n.kind === 'secretariat').length;
-    const revCount = nodes.length - secCount;
-    const height = Math.max(420, Math.max(secCount, revCount) * 36 + TOP);
+    const rightCount = nodes.filter((n) => n.kind === (focus ? 'program' : 'secretariat')).length;
+    const leftCount = nodes.length - rightCount;
+    const height = Math.max(focus ? 360 : 420, Math.max(rightCount, leftCount) * 36 + TOP);
+    const leftKind = focus ? 'secretariat' : 'revenue';
     const g = sankey<ModelNode, ModelLink>()
       .nodeId((d) => d.id)
-      .nodeAlign((d) => (d.kind === 'revenue' ? 0 : 1))
+      .nodeAlign((d) => (d.kind === leftKind ? 0 : 1))
       .nodeWidth(BAR)
       .nodePadding(GAP)
       .nodeSort((a, b) => a.order - b.order)
@@ -62,7 +70,7 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
 
     // Vertical room around each label so neighbours never overlap.
     const room = new Map<string, number>();
-    for (const kind of ['revenue', 'secretariat'] as const) {
+    for (const kind of [leftKind, focus ? 'program' : 'secretariat'] as const) {
       const col = g.nodes.filter((n) => n.kind === kind).sort((a, b) => (a.y0 ?? 0) - (b.y0 ?? 0));
       const cy = (n: N) => ((n.y0 ?? 0) + (n.y1 ?? 0)) / 2;
       col.forEach((n, i) => {
@@ -78,18 +86,18 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
       const b0 = (l.y1 ?? 0) - w / 2;
       paths.set(l, ribbon((l.source as N).x1 ?? 0, a0, a0 + w, (l.target as N).x0 ?? 0, b0, b0 + w));
     }
-    return { height, nodes: g.nodes, links: g.links, room, paths };
-  }, [model, width]);
+    return { height, nodes: g.nodes, links: g.links, room, paths, leftKind };
+  }, [model, width, focus]);
 
-  const litId = lit && layout.nodes.some((n) => n.id === lit) ? lit : null;
+  const litId = selected && selected !== focus && layout.nodes.some((n) => n.id === selected) ? selected : null;
   const linkId = (l: L) => `${(l.source as N).id}→${(l.target as N).id}`;
-  const toggle = (id: string) => setLit((cur) => (cur === id ? null : id));
-  const onKey = (e: KeyboardEvent, id: string) => {
+  const onKey = (e: KeyboardEvent, n: N) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      toggle(id);
+      onPick(n);
     }
   };
+  const focusName = focus ? layout.nodes.find((n) => n.id === focus)?.name : null;
 
   const linkStyle = (l: L) => {
     let fill = l.color;
@@ -118,6 +126,11 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
 
   return (
     <div>
+      {focus ? (
+        <button type="button" onClick={onBack} className="link mb-3 text-[0.95rem]">
+          ← All spending areas
+        </button>
+      ) : null}
       <svg
         width={width}
         height={layout.height}
@@ -127,10 +140,10 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
         className="block select-none"
         style={{ fontFamily: 'var(--font-sans)' }}
       >
-        <rect x={0} y={0} width={width} height={layout.height} fill="transparent" onClick={() => setLit(null)} />
+        <rect x={0} y={0} width={width} height={layout.height} fill="transparent" onClick={onBack} />
         <g style={{ fontSize: 13, fontWeight: 600 }} fill={COLORS.ink2}>
-          <text x={0} y={13}>Revenue</text>
-          <text x={width} y={13} textAnchor="end">Spending areas</text>
+          <text x={0} y={13}>{focus ? 'Spending area' : 'Revenue'}</text>
+          <text x={width} y={13} textAnchor="end">{focus ? 'Programs' : 'Spending areas'}</text>
         </g>
         <line x1={0} x2={width} y1={TOP - 10} y2={TOP - 10} stroke={COLORS.rule} strokeWidth={1} />
 
@@ -144,7 +157,7 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
                 fill={s.fill}
                 fillOpacity={s.opacity}
                 style={{ transition: 'fill-opacity 240ms ease-out, fill 240ms ease-out', mixBlendMode: 'multiply' }}
-                onClick={() => toggle((l.target as N).id)}
+                onClick={() => onPick(l.target as N)}
               />
             );
           })}
@@ -152,7 +165,7 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
 
         <g>
           {layout.nodes.map((n) => {
-            const isRev = n.kind === 'revenue';
+            const isRev = n.kind === layout.leftKind;
             const x0 = n.x0 ?? 0;
             const x1 = n.x1 ?? 0;
             const y0 = n.y0 ?? 0;
@@ -162,7 +175,7 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
             const hl = highlighting && n.highlighted;
             let fill = n.color;
             let opacity = 1;
-            if (highlighting && !isRev) {
+            if (highlighting && n.kind !== 'revenue') {
               if (hl) fill = COLORS.gold;
               else opacity = 0.45;
             }
@@ -174,21 +187,23 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
             const twoLine = space >= 30;
             const oneLine = !twoLine && space >= 13;
             const name = truncate(n.name, half - (twoLine ? 0 : amount.length * 7 + 6));
-            const labelOpacity = litSet && !litSet.has(n.id) ? 0.4 : hl || !highlighting || isRev ? 1 : 0.6;
-            const share = formatShare(n.amount, isRev ? model.revenueTotal : model.spendingTotal);
+            const labelOpacity = litSet && !litSet.has(n.id) ? 0.4 : hl || !highlighting || n.kind === 'revenue' ? 1 : 0.6;
+            const revenue = n.kind === 'revenue';
+            const share = formatShare(n.amount, revenue ? model.revenueTotal : model.spendingTotal);
+            const action = n.kind === 'secretariat' && !focus ? 'Show its programs.' : 'Show a breakdown below the chart.';
             return (
               <g
                 key={n.id}
                 role="button"
                 tabIndex={0}
                 aria-pressed={litId === n.id}
-                aria-label={`${n.name}, ${amount}, ${share} of ${isRev ? 'revenue collected' : `total ${spendWord}`}${hl ? ', highlighted' : ''}. Trace its bands.`}
+                aria-label={`${n.name}, ${amount}, ${share} of ${revenue ? 'revenue collected' : `total ${spendWord}`}${hl ? ', highlighted' : ''}. ${action}`}
                 className="outline-none"
                 style={{ cursor: 'pointer' }}
                 onFocus={(e) => e.currentTarget.matches(':focus-visible') && setKbFocus(n.id)}
                 onBlur={() => setKbFocus(null)}
-                onClick={() => toggle(n.id)}
-                onKeyDown={(e) => onKey(e, n.id)}
+                onClick={() => onPick(n)}
+                onKeyDown={(e) => onKey(e, n)}
               >
                 {/* Tap target: the bar plus the label area beside it. */}
                 <rect x={isRev ? 0 : width - half} y={cy - 14} width={half} height={28} fill="transparent" />
@@ -223,8 +238,9 @@ export function PhoneSankey({ model, width, highlighting, spendWord, label }: Pr
         </g>
       </svg>
       <p className="mt-2 text-[0.85rem] text-ink-2">
-        Tap a source or spending area to trace its bands. Band widths are to scale. Details are in
-        the lists below.
+        {focus
+          ? `${focusName ?? 'This area'}’s largest programs, drawn to scale. Tap one for its breakdown.`
+          : 'Tap a spending area to see its programs, or a revenue source for what it pays for. Band widths are to scale.'}
       </p>
     </div>
   );
