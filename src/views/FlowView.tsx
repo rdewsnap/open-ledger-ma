@@ -11,7 +11,7 @@ import { buildFlowModel } from '../lib/flowModel';
 import { highlightSet, highlightSubtotal } from '../lib/highlight';
 import { formatMoney, fyLong, fyShort, longDate, monthsInto, partialLabel } from '../lib/format';
 import type { Measure } from '../lib/types';
-import { useWidth } from '../state/media';
+import { useMediaQuery, useWidth } from '../state/media';
 import { useMeta } from '../state/meta';
 import { useLedgerParams } from '../state/params';
 import { useAsync } from '../state/useAsync';
@@ -19,8 +19,7 @@ import { useAsync } from '../state/useAsync';
 export function FlowView() {
   const { meta, year, partial } = useMeta();
   const { hl, measure, setMeasure, setHighlight } = useLedgerParams();
-  // Trial: every screen size gets the full chart (the phone list is not used).
-  const wide = true;
+  const wide = useMediaQuery('(min-width: 640px)');
   const [ref, width] = useWidth<HTMLDivElement>();
   // Focus (the expanded spending area) and the selection (the node in the breakdown)
   // are keyed to the data they were chosen on, so they clear when year/measure change.
@@ -228,7 +227,7 @@ export function FlowView() {
       */}
       <div
         ref={ref}
-        className={`mt-4 ${flows.status === 'error' ? '' : 'min-h-[680px] lg:min-h-[760px]'}`}
+        className={`mt-4 ${flows.status === 'error' ? '' : 'min-h-[2080px] sm:min-h-[680px] lg:min-h-[760px]'}`}
       >
         {flows.status === 'loading' ? (
           <p className="py-24 text-center text-[0.9rem] text-ink-2">Loading {fyShort(year)}…</p>
