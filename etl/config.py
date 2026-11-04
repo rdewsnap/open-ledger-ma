@@ -29,6 +29,8 @@ class Dataset:
     name: str  # human dataset title on CTHRU
     where: str  # extra SoQL filter, ANDed with the fiscal year filter
     order: str  # stable ordering for $offset paging
+    year_where: str = "fiscal_year = {year}"  # fiscal year filter template
+    group: str = ""  # SoQL $group; when set, FIELDS are aggregate selects ("sum(x) as y")
 
     @property
     def resource_url(self) -> str:
@@ -62,7 +64,19 @@ REVENUE = Dataset(
     order=":id",
 )
 
-DATASETS: tuple[Dataset, ...] = (SPENDING, REVENUE)
+# Payments from capital (bond-funded) appropriations, summed by department. Capital lives in
+# its own funds (General/Highway Capital Projects etc.), so it never overlaps SPENDING.
+CAPITAL = Dataset(
+    key="capital",
+    id="pegc-naaa",
+    name="Comptroller of the Commonwealth Spending (CTHRU Spending), capital appropriations",
+    where="appropriation_type like '(2CN)%'",
+    order="department_code",
+    year_where="budget_fiscal_year = '{year}'",
+    group="budget_fiscal_year, cabinet_secretariat, department_code",
+)
+
+DATASETS: tuple[Dataset, ...] = (SPENDING, REVENUE, CAPITAL)
 
 # Spending fields kept in the raw CSV (contract list plus a few useful extras).
 SPENDING_FIELDS: tuple[str, ...] = (
@@ -98,7 +112,20 @@ REVENUE_FIELDS: tuple[str, ...] = (
     "revenue_collected",
 )
 
-FIELDS: dict[str, tuple[str, ...]] = {"spending": SPENDING_FIELDS, "revenue": REVENUE_FIELDS}
+CAPITAL_FIELDS: tuple[str, ...] = (
+    "budget_fiscal_year",
+    "cabinet_secretariat",
+    "department_code",
+    "sum(amount) as amount",
+)
+
+FIELDS: dict[str, tuple[str, ...]] = {"spending": SPENDING_FIELDS, "revenue": REVENUE_FIELDS,
+                                      "capital": CAPITAL_FIELDS}
+
+
+def column_name(field: str) -> str:
+    """CSV column for a select expression: the alias of "sum(x) as y", else the field itself."""
+    return field.rsplit(" as ", 1)[-1].strip()
 
 
 def raw_path(dataset_key: str, year: int) -> Path:

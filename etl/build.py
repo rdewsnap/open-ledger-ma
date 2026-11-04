@@ -30,7 +30,7 @@ import pandas as pd
 
 import names
 import revenue_groups
-from config import (DATA_DIR, DEFAULT_YEARS, MAPPING_CSV, METHODOLOGY_MD, RAW_DIR, REVENUE, SPENDING,
+from config import (CAPITAL, DATA_DIR, DEFAULT_YEARS, MAPPING_CSV, METHODOLOGY_MD, RAW_DIR, REVENUE, SPENDING,
                     raw_path)
 
 MONEY = ("enacted", "gaa", "actual")
@@ -79,6 +79,43 @@ def load_revenue(years: list[int]) -> pd.DataFrame:
     df["year"] = pd.to_numeric(df["fiscal_year"]).astype(int)
     df["revenue_collected"] = pd.to_numeric(df["revenue_collected"].replace("", "0"), errors="coerce").fillna(0.0)
     return df
+
+
+def load_capital(years: list[int]) -> pd.DataFrame:
+    """Load capital payment totals by department (empty for years not yet pulled)."""
+    frames = []
+    for year in years:
+        path = raw_path(CAPITAL.key, year)
+        if path.exists():
+            frames.append(pd.read_csv(path, dtype=str, keep_default_na=False))
+    if not frames:
+        return pd.DataFrame(columns=["year", "cabinet_secretariat", "department_code", "amount"])
+    df = pd.concat(frames, ignore_index=True)
+    df["year"] = pd.to_numeric(df["budget_fiscal_year"]).astype(int)
+    df["amount"] = pd.to_numeric(df["amount"].replace("", "0"), errors="coerce").fillna(0.0)
+    df["department_code"] = df["department_code"].str.strip()
+    return df
+
+
+def build_capital(year: int, capital: pd.DataFrame, directory: Directory) -> dict[str, Any] | None:
+    """Capital (bond-funded) payments for one year, by secretariat and department id.
+
+    Departments are placed with the same secretariat as in the operating data; a
+    capital-only department falls back to its CTHRU secretariat name.
+    """
+    rows = capital[capital["year"] == year]
+    if rows.empty:
+        return None
+    by_sec: dict[str, float] = {}
+    by_dept: dict[str, float] = {}
+    for row in rows.itertuples(index=False):
+        sec = directory.dept_sec.get(row.department_code) or names.secretariat(row.cabinet_secretariat)[0]
+        by_sec[sec] = by_sec.get(sec, 0.0) + row.amount
+        dept = f"dept:{sec}/{row.department_code}"
+        by_dept[dept] = by_dept.get(dept, 0.0) + row.amount
+    keep = lambda d: {k: int(round(v)) for k, v in sorted(d.items(), key=lambda kv: -kv[1]) if round(v) >= 1}
+    return {"total": int(round(rows["amount"].sum())),
+            "bySec": {f"sec:{k}": v for k, v in keep(by_sec).items()}, "byDept": keep(by_dept)}
 
 
 def load_mapping(path: Path = MAPPING_CSV) -> pd.DataFrame:
@@ -445,6 +482,7 @@ def build(years: list[int]) -> dict[str, Any]:
     manifest = load_manifest()
     spend = load_spending(years)
     revenue = load_revenue(years)
+    capital = load_capital(years)
     mapping = load_mapping()
     directory = build_directory(spend)
 
@@ -463,7 +501,11 @@ def build(years: list[int]) -> dict[str, Any]:
     coverage: dict[str, dict[str, Any]] = {}
     partial: dict[str, dict[str, str]] = {}
     sizes: dict[str, int] = {}
+    capital_totals: dict[str, dict[str, Any]] = {}
     for year in years:
+        cap = build_capital(year, capital, directory)
+        if cap:
+            capital_totals[str(year)] = cap
         tree = build_tree(year, spend, homes, mapping, directory)
         trees[year] = tree
         rev = revenue_groups.group_revenue(revenue[revenue["year"] == year])
@@ -508,9 +550,15 @@ def build(years: list[int]) -> dict[str, Any]:
                         "pulled": pulled_date(manifest, REVENUE.key, years),
                         "rowsUpdatedAt": manifest["datasets"][REVENUE.key].get("rowsUpdatedAt"),
                         "filter": REVENUE.where},
+            **({"capital": {"id": CAPITAL.id, "name": manifest["datasets"][CAPITAL.key]["name"],
+                            "url": CAPITAL.page_url, "api": f"{CAPITAL.resource_url}.json",
+                            "pulled": pulled_date(manifest, CAPITAL.key, years),
+                            "rowsUpdatedAt": manifest["datasets"][CAPITAL.key].get("rowsUpdatedAt"),
+                            "filter": CAPITAL.where}} if capital_totals else {}),
         },
         "totals": totals,
         "coverage": coverage,
+        **({"capital": capital_totals} if capital_totals else {}),
         "revenueGroups": [{"id": f"rev:{g}", "name": label} for g, label in revenue_groups.GROUPS],
     }
     sizes["meta.json"] = write_json(DATA_DIR / "meta.json", meta)

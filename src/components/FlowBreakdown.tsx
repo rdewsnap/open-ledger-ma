@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { capitalFor } from '../lib/capital';
 import { accountOf } from '../lib/data';
 import { sourcePath } from '../lib/source';
 import { COLORS, SMALL_SECS, treeLeaves, type FlowModel, type ModelNode } from '../lib/flowModel';
 import { formatMoney, formatShare, fyLong } from '../lib/format';
 import type { Measure, TreeNode } from '../lib/types';
+import { useMeta } from '../state/meta';
+import { AmountInContext } from './AmountInContext';
 import { HighlightDot } from './HighlightDot';
 
 type Row = {
@@ -111,6 +114,10 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
   const name = node?.name ?? treeNode?.name ?? id;
   const amount = node?.amount ?? (treeNode ? treeNode[measure] : 0);
   const kind = node?.kind ?? (id.startsWith('sec:') ? 'secretariat' : id.startsWith('rev:') ? 'revenue' : 'program');
+  const { meta, partial } = useMeta();
+  const capital = kind === 'secretariat' && id !== SMALL_SECS ? capitalFor(meta, year, id) : null;
+  const verb =
+    measure === 'enacted' ? `budgeted for ${fyLong(year)}` : partial ? `spent so far in ${fyLong(year)}` : `spent in ${fyLong(year)}`;
 
   const revenueRows = (part: number): Row[] =>
     full.revenue.map((r) => ({ id: r.id, name: r.name, amount: model.revenueTotal ? (part * r.amount) / model.revenueTotal : 0 }));
@@ -293,12 +300,36 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
       </p>
       {kind === 'secretariat' ? (
         <p className="mt-2 max-w-[62ch] text-[0.85rem] text-ink-2">
-          Operating budget only. Bond-funded capital spending, like construction and land purchases,
-          is not included (<Link to="/methodology#known-limitations">why</Link>).
+          Operating budget only.{' '}
+          {capital ? (
+            <>
+              Separately, <span className="num text-ink">{formatMoney(capital)}</span> of bond-funded
+              capital spending, like construction and land purchases, was paid out
+              {partial ? ' so far' : ''} in {fyLong(year)}; it is not in the chart (
+              <Link to="/methodology#capital-spending">why</Link>).
+            </>
+          ) : (
+            <>
+              Bond-funded capital spending, like construction and land purchases, is not included (
+              <Link to="/methodology#capital-spending">why</Link>).
+            </>
+          )}
         </p>
       ) : null}
       <div className="mt-6 grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-2">{blocks}</div>
       {table}
+      {kind === 'secretariat' || kind === 'program' ? (
+        <AmountInContext
+          area={{ name, amount, capital }}
+          total={model.spendingTotal}
+          verb={verb}
+          totalLabel={
+            measure === 'enacted'
+              ? `the whole operating budget for ${fyLong(year)}`
+              : `all state operating spending${partial ? ' so far' : ''} in ${fyLong(year)}`
+          }
+        />
+      ) : null}
     </section>
   );
 }

@@ -9,6 +9,7 @@ import {
   monthYear,
   longDate,
   monthsInto,
+  parseAmount,
   partialLabel,
 } from './format';
 
@@ -84,5 +85,21 @@ describe('partial-year labels', () => {
     expect(monthsInto(2027, '2026-09-30')).toBe('three months');
     expect(monthsInto(2027, '2026-07-02')).toBe('one month');
     expect(monthsInto(2027, '2027-06-30')).toBe('twelve months');
+  });
+});
+
+describe('parseAmount', () => {
+  it('reads the ways people write amounts', () => {
+    expect(parseAmount('$65M')).toBe(65_000_000);
+    expect(parseAmount('65 million')).toBe(65_000_000);
+    expect(parseAmount('1.2b')).toBe(1_200_000_000);
+    expect(parseAmount('65,000,000')).toBe(65_000_000);
+    expect(parseAmount('$400K')).toBe(400_000);
+  });
+  it('rejects what is not an amount', () => {
+    expect(parseAmount('')).toBeNull();
+    expect(parseAmount('abc')).toBeNull();
+    expect(parseAmount('65 lots')).toBeNull();
+    expect(parseAmount('0')).toBeNull();
   });
 });

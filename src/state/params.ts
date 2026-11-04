@@ -8,8 +8,9 @@ import type { Measure } from '../lib/types';
  *   ?fy=2026                    fiscal year
  *   ?measure=enacted            measure (default: spent)
  *   ?hl=sec:EEA,dept:EHS/DMH    highlighted secretariats/departments
+ *   ?amt=65000000               an amount to put in context (dollars)
  */
-export const KEPT_PARAMS = ['fy', 'measure', 'hl'] as const;
+export const KEPT_PARAMS = ['fy', 'measure', 'hl', 'amt'] as const;
 
 /**
  * URLSearchParams escapes ":", "/" and ",", which are legal in a query string.
@@ -30,6 +31,8 @@ export function useLedgerParams() {
   const measure: Measure = params.get('measure') === 'enacted' ? 'enacted' : 'actual';
   const hlRaw = params.get('hl');
   const hl = useMemo(() => parseHighlightParam(hlRaw), [hlRaw]);
+  const amtRaw = Number(params.get('amt'));
+  const amount = Number.isFinite(amtRaw) && amtRaw > 0 ? amtRaw : null;
 
   const update = useCallback(
     (key: string, value: string | null) => {
@@ -49,6 +52,9 @@ export function useLedgerParams() {
     measure,
     /** Highlight ids from the URL, unvalidated against any year's tree. */
     hl,
+    /** Dollar amount to put in context, or null. */
+    amount,
+    setAmount: (value: number | null) => update('amt', value === null ? null : String(Math.round(value))),
     setYear: (year: number) => update('fy', String(year)),
     setMeasure: (m: Measure) => update('measure', m === 'enacted' ? 'enacted' : null),
     setHighlight: (ids: readonly string[]) => update('hl', encodeHighlightParam(ids)),
