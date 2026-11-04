@@ -62,7 +62,9 @@ Run `pnpm deploy` after `wrangler login`.
 
 ## Privacy
 
-No tracking scripts, no cookies, no third-party requests. Fonts are self-hosted.
+No cookies and no ads. Visits are counted with Cloudflare Web Analytics, which sets no cookies
+and collects no personal data. The Source rows page reads records straight from the state's CTHRU
+API. Fonts are self-hosted.
 
 ## License
 

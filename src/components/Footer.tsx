@@ -16,7 +16,7 @@ export function Footer() {
           {sep}
           <a href={SITE.github}>GitHub</a>
         </p>
-        <p>No tracking. No cookies.</p>
+        <p>No cookies. Anonymous visit counts only.</p>
       </div>
     </footer>
   );
