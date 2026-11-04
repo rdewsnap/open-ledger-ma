@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "open-ledger-ma",
+  "compatibility_date": "2026-11-03",
+  "observability": { "enabled": false },
+  "workers_dev": true,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "openledgerma.org", "custom_domain": true },
+    { "pattern": "www.openledgerma.org", "custom_domain": true }
+  ],
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
