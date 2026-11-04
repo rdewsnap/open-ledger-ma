@@ -16,6 +16,9 @@ import { useMeta } from '../state/meta';
 import { useLedgerParams } from '../state/params';
 import { useAsync } from '../state/useAsync';
 
+/** Spending areas under this share of the total fold into "Smaller offices" on phones. */
+const PHONE_MIN_SEC = 0.016;
+
 export function FlowView() {
   const { meta, year, partial } = useMeta();
   const { hl, measure, setMeasure, setHighlight } = useLedgerParams();
@@ -75,15 +78,22 @@ export function FlowView() {
   const listModel = useMemo(
     () =>
       flows.status === 'ready'
-        ? buildFlowModel(flows.data, { tree: treeData, measure, revenueOrder, highlight })
+        ? buildFlowModel(flows.data, {
+            tree: treeData,
+            measure,
+            revenueOrder,
+            highlight,
+            // Phones group small offices more; match the chart so "Smaller offices (N)" agrees.
+            ...(wide ? {} : { minSecShare: PHONE_MIN_SEC, keep: focus }),
+          })
         : null,
-    [flows, treeData, measure, revenueOrder, highlight],
+    [flows, treeData, measure, revenueOrder, highlight, wide, focus],
   );
   // Phones: fold more small offices so the right column stays readable at ~360px.
   const phoneModel = useMemo(
     () =>
       !wide && flows.status === 'ready'
-        ? buildFlowModel(flows.data, { focus, focusPrograms: 10, topPrograms: 0, minSecShare: 0.016, highlight, tree: treeData, measure, revenueOrder })
+        ? buildFlowModel(flows.data, { focus, keep: focus, focusPrograms: 10, topPrograms: 0, minSecShare: PHONE_MIN_SEC, highlight, tree: treeData, measure, revenueOrder })
         : null,
     [wide, flows, focus, highlight, treeData, measure, revenueOrder],
   );
@@ -265,7 +275,9 @@ export function FlowView() {
             focus={focus}
             selected={selected}
             onPick={(n) => {
-              if (n.kind === 'secretariat' && n.id !== focus) setFocus(n.id);
+              // An office inside "Smaller offices" opens as its own spending area.
+              if (n.id.startsWith('prog:office:')) setFocus(n.id.replace('prog:office:', 'sec:'));
+              else if (n.kind === 'secretariat' && n.id !== focus) setFocus(n.id);
               else setPick((p) => ({ key: dataKey, focus, selected: p.selected === n.id && n.id !== focus ? null : n.id }));
             }}
             onBack={() => setFocus(null)}
@@ -286,7 +298,7 @@ export function FlowView() {
           measureLabel={measure === 'enacted' ? 'Budgeted' : spentLabel}
           spendWord={spendWord}
           highlighting={highlighting}
-          onSelect={setSelected}
+          onSelect={wide ? setSelected : (id) => (/^(sec|prog:office):/.test(id) ? setFocus(id.replace('prog:office:', 'sec:')) : setSelected(id))}
           onClose={() => setFocus(null)}
         />
       ) : null}

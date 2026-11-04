@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { accountOf } from '../lib/data';
 import { sourcePath } from '../lib/source';
 import { COLORS, SMALL_SECS, treeLeaves, type FlowModel, type ModelNode } from '../lib/flowModel';
-import { formatMoney, formatShare } from '../lib/format';
+import { formatMoney, formatShare, fyLong } from '../lib/format';
 import type { Measure, TreeNode } from '../lib/types';
 import { HighlightDot } from './HighlightDot';
 
@@ -97,6 +97,9 @@ function findTree(node: TreeNode | null, id: string): TreeNode | null {
 
 const PROPORTIONAL_NOTE =
   'State revenue is pooled, so no dollar is tagged to a program. These amounts split the spending in proportion to each source’s share of revenue.';
+const MIX_LABEL = 'Statewide revenue mix, applied proportionally';
+const MIX_NOTE =
+  'This is not where this money actually came from. Most spending runs through the General Fund, where revenue is pooled, so these rows apply the state’s overall revenue mix to this amount. Federal money is the exception: it arrives as grants and reimbursements for specific programs, so the real federal share here may be much higher or lower.';
 
 /**
  * The secondary display under the Flow chart: the selected node's total, its share,
@@ -154,7 +157,7 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
     blocks = (
       <>
         <BarList label={partsLabel} rows={parts} whole={amount} color={COLORS.navy} onPick={id === SMALL_SECS ? onSelect : undefined} />
-        <BarList label="Paid for by, in proportion" rows={revenueRows(amount)} whole={amount} color={COLORS.slate} note={PROPORTIONAL_NOTE} />
+        <BarList label={MIX_LABEL} rows={revenueRows(amount)} whole={amount} color={COLORS.slate} note={MIX_NOTE} />
       </>
     );
     const programs: ModelNode[] =
@@ -263,7 +266,7 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
             </p>
           )}
         </div>
-        <BarList label="Paid for by, in proportion" rows={revenueRows(amount)} whole={amount} color={COLORS.slate} note={PROPORTIONAL_NOTE} />
+        <BarList label={MIX_LABEL} rows={revenueRows(amount)} whole={amount} color={COLORS.slate} note={MIX_NOTE} />
       </>
     );
   }
@@ -285,10 +288,10 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
       <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span className="num text-[1.75rem] leading-none font-semibold text-ink">{formatMoney(amount)}</span>
         <span className="text-[0.95rem] text-ink-2">
-          {kind === 'revenue' ? 'collected' : measureLabel.toLowerCase()} · {shareLine}
+          {kind === 'revenue' ? 'collected' : measureLabel.toLowerCase()} in {fyLong(year)} · {shareLine}
         </span>
       </p>
-      <div className="mt-6 grid gap-x-12 gap-y-8 md:grid-cols-2">{blocks}</div>
+      <div className="mt-6 grid grid-cols-1 gap-x-12 gap-y-8 md:grid-cols-2">{blocks}</div>
       {table}
     </section>
   );
