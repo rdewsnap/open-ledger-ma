@@ -11,20 +11,16 @@ import { buildFlowModel } from '../lib/flowModel';
 import { highlightSet, highlightSubtotal } from '../lib/highlight';
 import { formatMoney, fyLong, fyShort, longDate, monthsInto, partialLabel } from '../lib/format';
 import type { Measure } from '../lib/types';
-import { useMediaQuery, useWidth } from '../state/media';
+import { useWidth } from '../state/media';
 import { useMeta } from '../state/meta';
 import { useLedgerParams } from '../state/params';
 import { useAsync } from '../state/useAsync';
 
-/** Width the desktop chart is drawn at before it is shrunk onto a phone. */
-const DESKTOP_W = 1024;
-
 export function FlowView() {
   const { meta, year, partial } = useMeta();
   const { hl, measure, setMeasure, setHighlight } = useLedgerParams();
-  // Every screen gets the full chart; phones see the desktop layout shrunk to fit.
+  // Trial: every screen size gets the full chart (the phone list is not used).
   const wide = true;
-  const phone = useMediaQuery('(max-width: 639.98px)', false);
   const [ref, width] = useWidth<HTMLDivElement>();
   // Focus (the expanded spending area) and the selection (the node in the breakdown)
   // are keyed to the data they were chosen on, so they clear when year/measure change.
@@ -62,7 +58,7 @@ export function FlowView() {
     return () => window.removeEventListener('keydown', onKey);
   }, [focus, selected, setFocus]);
 
-  const narrow = !phone && width > 0 && width < 960;
+  const narrow = width > 0 && width < 960;
   const model = useMemo(
     () =>
       flows.status === 'ready'
@@ -228,11 +224,11 @@ export function FlowView() {
 
       {/*
         Reserve the chart's rendered height before data arrives (CLS): the Sankey
-        is 680–780px tall on tablets/desktops and about 300px shrunk onto a phone.
+        is 680–780px tall on tablets/desktops; the phone list is about 2,100px.
       */}
       <div
         ref={ref}
-        className={`mt-4 ${flows.status === 'error' ? '' : 'min-h-[300px] sm:min-h-[680px] lg:min-h-[760px]'}`}
+        className={`mt-4 ${flows.status === 'error' ? '' : 'min-h-[680px] lg:min-h-[760px]'}`}
       >
         {flows.status === 'loading' ? (
           <p className="py-24 text-center text-[0.9rem] text-ink-2">Loading {fyShort(year)}…</p>
@@ -245,8 +241,7 @@ export function FlowView() {
         ) : wide && model && width > 0 ? (
           <SankeyChart
             model={model}
-            width={phone ? DESKTOP_W : width}
-            displayWidth={phone ? width : undefined}
+            width={width}
             highlighting={highlighting}
             focus={focus}
             onFocus={setFocus}
