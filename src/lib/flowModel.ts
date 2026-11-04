@@ -77,6 +77,8 @@ export type ModelOptions = {
   minSecShare?: number;
   /** Highlighted secretariat/department ids (see lib/highlight.ts). */
   highlight?: HighlightSet;
+  /** A secretariat that stays its own node even when it is small enough to fold into "Smaller offices". */
+  keep?: string | null;
   /** tree.json for the year: gives full program detail for focus + phone lists, and departments for the highlight. */
   tree?: TreeNode | null;
   measure?: Measure;
@@ -115,10 +117,10 @@ export function isOtherId(id: string): boolean {
 }
 
 export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel {
-  const { focus = null, topPrograms = 16, focusPrograms = 14, minOtherShare = 0.012, minSecShare = 0.005, highlight = NO_HIGHLIGHT, tree = null, measure = flows.measure, revenueOrder } = opts;
+  const { focus = null, topPrograms = 16, focusPrograms = 14, minOtherShare = 0.012, minSecShare = 0.005, highlight = NO_HIGHLIGHT, keep = null, tree = null, measure = flows.measure, revenueOrder } = opts;
   // Secretariats touched by the highlight (selected, or holding a selected department).
   const hlSecs = new Set([...highlight].map(secOf).filter((x): x is string => Boolean(x)));
-  flows = foldSmallSecretariats(flows, minSecShare, (id) => hlSecs.has(id));
+  flows = foldSmallSecretariats(flows, minSecShare, (id) => hlSecs.has(id) || id === keep);
   const ancestors = ancestorIndex(tree);
   /** Program ids from flows.json fall back to their parent secretariat; folded offices map to theirs. */
   const isHl = (id: string, parent?: string) => {
@@ -259,7 +261,8 @@ export function buildFlowModel(flows: Flows, opts: ModelOptions = {}): FlowModel
     const keep = list.slice(0, focusPrograms);
     for (const p of keep) {
       remap.set(p.id, p.id);
-      drawn.set(p.id, { ...p });
+      // Amounts are summed from the links below; starting from p.amount would count it twice.
+      drawn.set(p.id, { ...p, amount: 0 });
     }
     for (const p of fullPrograms.get(focus) ?? []) {
       if (!remap.has(p.id)) remap.set(p.id, otherIdFor(focus));
