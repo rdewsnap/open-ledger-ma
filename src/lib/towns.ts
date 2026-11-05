@@ -19,7 +19,16 @@ export function searchPlaces(towns: Towns, query: string, limit = 8): TownPlace[
   return [...starts, ...contains].slice(0, limit);
 }
 
-/** Regional school districts whose name includes the town's name as whole words. */
-export function districtsNamedFor(towns: Towns, town: TownPlace): TownPlace[] {
-  return towns.places.filter((p) => p.kind === 'district' && ` ${p.id} `.includes(` ${town.id} `));
+/** The places a town's `districts` or a district's `members` point to, in their listed order. */
+export function linkedPlaces(towns: Towns, links: { id: string; students: number }[] | undefined) {
+  const byId = new Map(towns.places.map((p) => [p.id, p]));
+  return (links ?? []).flatMap((l) => {
+    const place = byId.get(l.id);
+    return place ? [{ place, students: l.students }] : [];
+  });
+}
+
+/** School year ending in `year`: 2026 is "2025–26". */
+export function schoolYearLabel(year: number): string {
+  return `${year - 1}–${String(year % 100).padStart(2, '0')}`;
 }

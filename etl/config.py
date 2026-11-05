@@ -138,6 +138,17 @@ FIELDS: dict[str, tuple[str, ...]] = {"spending": SPENDING_FIELDS, "revenue": RE
                                       "capital": CAPITAL_FIELDS}
 
 
+# Town-level figures for the Your town page. Residents: the Census Bureau's Vintage 2025 city and
+# town estimates (July 1). Students: the state education department's October 1 count of public
+# school students by the town they live in and the district they attend.
+TOWN_POPULATION_YEAR: int = 2025
+TOWN_POPULATION_URL: str = "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/cities/totals/sub-est2025_25.csv"
+TOWN_POPULATION_PATH: Path = RAW_DIR / "town_population.csv"
+TOWN_STUDENTS_URL: str = "https://educationtocareer.data.mass.gov/resource/8xyg-59b2.json"
+TOWN_STUDENTS_PAGE: str = "https://educationtocareer.data.mass.gov/d/8xyg-59b2"
+TOWN_STUDENTS_PATH: Path = RAW_DIR / "town_students.json"
+
+
 def column_name(field: str) -> str:
     """CSV column for a select expression: the alias of "sum(x) as y", else the field itself."""
     return field.rsplit(" as ", 1)[-1].strip()

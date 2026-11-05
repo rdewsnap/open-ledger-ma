@@ -225,8 +225,19 @@ FY2027 are included; the FY2024 file is in an older format the pipeline does not
 
 - These are amounts in the original budget, not payments made during the year.
 - A regional school district gets its school aid directly, so a town whose schools are regional
-  shows little or no school aid of its own. The page does not know which towns belong to which
-  district; it only points to districts with the town's name in theirs.
+  shows little or no school aid of its own. The page lists the regional districts a town's
+  students attend as residents of a member town, from the state education department's
+  [enrollment by town](https://educationtocareer.data.mass.gov/d/8xyg-59b2) data.
+- **Residents** are the Census Bureau's Vintage 2025
+  [city and town estimates](https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/cities/totals/sub-est2025_25.csv)
+  for July 1, 2025, which add up to the state estimate used for per-resident figures. The county
+  shown beside a town's name comes from the same file.
+- **Students** are counted on October 1 of the latest school year in that enrollment data. For a
+  city or town it is the public school students who live there, wherever they go to school (their
+  own district, a regional district, a charter school or another town's schools). For a regional
+  district it is the students enrolled in it. Private school and home-schooled students are not
+  counted. The page does not divide aid by students, because a town's school aid does not cover
+  the students its regional districts are paid for.
 - Other local aid is not included: charter school reimbursements, Chapter 90 road money, library
   aid, school construction grants, and the charges the state bills back to a community. The
   Division of Local Services' [cherry sheets](https://www.mass.gov/cherry-sheet-estimates)

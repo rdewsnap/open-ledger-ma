@@ -37,6 +37,15 @@ export type TownPlace = {
   kind: 'town' | 'district';
   /** Keyed by fiscal year; a year is absent when the place is not on that year's list. */
   aid: Record<string, TownAid>;
+  /** Towns only: Census estimate of residents (Towns.residentsYear) and the town's county. */
+  residents?: number;
+  county?: string;
+  /** A town: public school students who live there. A district: students enrolled in it. */
+  students?: number;
+  /** A town's regional districts, with how many of its students each enrolls as a member town. */
+  districts?: { id: string; students: number }[];
+  /** A district's member towns, with how many students each sends. */
+  members?: { id: string; students: number }[];
 };
 
 /** data/towns.json: the budget's Section 3 local aid lists (DATA_CONTRACT "towns"). */
@@ -44,6 +53,10 @@ export type Towns = {
   years: number[];
   totals: Record<string, { towns: number; districts: number; ch70: number; ugga: number; townCh70: number; districtCh70: number }>;
   places: TownPlace[];
+  /** July 1 of this year, for residents; absent when the estimates were not pulled. */
+  residentsYear?: number;
+  /** School year ending in this year (2026 is 2025–26), for students. */
+  schoolYear?: number;
 };
 
 export type CapitalYear = {

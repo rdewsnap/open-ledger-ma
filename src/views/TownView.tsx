@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { DataMissingError, loadTowns } from '../lib/data';
 import { formatMoney, formatMoneyChange, formatPercentChange, formatShare, fyLong, fyShort } from '../lib/format';
-import { districtsNamedFor, normalizePlace, searchPlaces } from '../lib/towns';
+import { linkedPlaces, normalizePlace, schoolYearLabel, searchPlaces } from '../lib/towns';
 import type { TownAid, TownPlace, Towns } from '../lib/types';
 import { useMeta } from '../state/meta';
 import { useAsync } from '../state/useAsync';
@@ -10,20 +10,38 @@ import { useAsync } from '../state/useAsync';
 const CHERRY_SHEETS = 'https://www.mass.gov/cherry-sheet-estimates';
 
 const sum = (a: TownAid | undefined) => (a ? a.ch70 + a.ugga : 0);
+const count = (n: number) => n.toLocaleString('en-US');
+
+/** "Tri County (182 students), Norfolk County (17)": each name opens that place. */
+function PlaceLinks({ links, onPick }: { links: { place: TownPlace; students: number }[]; onPick: (id: string) => void }) {
+  return (
+    <>
+      {links.map((l, i) => (
+        <span key={l.place.id}>
+          {i ? ', ' : ''}
+          <button type="button" className="link" onClick={() => onPick(l.place.id)}>
+            {l.place.name}
+          </button>{' '}
+          <span className="num">({count(l.students)}{i ? '' : ' students'})</span>
+        </span>
+      ))}
+    </>
+  );
+}
 
 /** One row per year: school aid, unrestricted aid, total and the change from the year before. */
 function AidTable({ years, aid, caption }: { years: number[]; aid: (year: number) => TownAid | undefined; caption: string }) {
   return (
     <div className="mt-4 overflow-x-auto">
-      <table className="w-full min-w-[30rem] border-collapse text-[0.95rem]">
+      <table className="w-full border-collapse text-[0.85rem] sm:text-[0.95rem]">
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-b border-rule text-left">
             <th scope="col" className="colhead py-2">Year</th>
-            <th scope="col" className="colhead py-2 text-right">School aid</th>
-            <th scope="col" className="colhead py-2 text-right">Unrestricted aid</th>
-            <th scope="col" className="colhead py-2 text-right">Total</th>
-            <th scope="col" className="colhead py-2 text-right">Change</th>
+            <th scope="col" className="colhead py-2 pl-2 text-right">School aid</th>
+            <th scope="col" className="colhead py-2 pl-2 text-right">Unrestricted aid</th>
+            <th scope="col" className="colhead py-2 pl-2 text-right">Total</th>
+            <th scope="col" className="colhead py-2 pl-2 text-right">Change</th>
           </tr>
         </thead>
         <tbody>
@@ -36,14 +54,16 @@ function AidTable({ years, aid, caption }: { years: number[]; aid: (year: number
                 <th scope="row" className="num py-2 text-left font-normal text-ink">{fyShort(y)}</th>
                 {a ? (
                   <>
-                    <td className="num py-2 text-right text-ink-2">{formatMoney(a.ch70)}</td>
-                    <td className="num py-2 text-right text-ink-2">{formatMoney(a.ugga)}</td>
-                    <td className="num py-2 text-right font-semibold text-ink">{formatMoney(sum(a))}</td>
-                    <td className="num py-2 text-right text-ink-2">
+                    <td className="num py-2 pl-2 text-right text-ink-2">{formatMoney(a.ch70)}</td>
+                    <td className="num py-2 pl-2 text-right text-ink-2">{formatMoney(a.ugga)}</td>
+                    <td className="num py-2 pl-2 text-right font-semibold text-ink">{formatMoney(sum(a))}</td>
+                    <td className="num py-2 pl-2 text-right text-ink-2">
                       {delta === null ? '—' : (
                         <>
                           {formatMoneyChange(delta)}
-                          {sum(prev) > 0 ? ` (${formatPercentChange(delta / sum(prev))})` : ''}
+                          {sum(prev) > 0 ? (
+                            <span className="block sm:inline"> ({formatPercentChange(delta / sum(prev))})</span>
+                          ) : null}
                         </>
                       )}
                     </td>
@@ -64,17 +84,27 @@ function PlaceResult({ towns, place, onPick }: { towns: Towns; place: TownPlace;
   const latest = towns.years.filter((y) => place.aid[String(y)]).at(-1);
   const latestAid = latest ? place.aid[String(latest)] : undefined;
   const all = latest ? towns.totals[String(latest)] : undefined;
-  const related = place.kind === 'town' ? districtsNamedFor(towns, place) : [];
+  const links = linkedPlaces(towns, place.kind === 'town' ? place.districts : place.members);
+  const facts = [
+    place.residents && towns.residentsYear ? `${count(place.residents)} residents (${towns.residentsYear} estimate)` : null,
+    place.students !== undefined && towns.schoolYear
+      ? `${count(place.students)} ${place.kind === 'town' ? 'public school students' : 'students'} (${schoolYearLabel(towns.schoolYear)})`
+      : null,
+  ].filter(Boolean);
   return (
     <section aria-labelledby="town-title" className="mt-8 border-t-2 border-ink pt-5">
-      <p className="eyebrow">{place.kind === 'district' ? 'Regional school district' : 'City or town'}</p>
+      <p className="eyebrow">
+        {place.kind === 'district' ? 'Regional school district' : 'City or town'}
+        {place.county ? ` · ${place.county} County` : ''}
+      </p>
       <h2 id="town-title" className="mt-2 text-[1.75rem] md:text-[2rem]">{place.name}</h2>
+      {facts.length ? <p className="num mt-1 text-[0.95rem] text-ink-2">{facts.join(' · ')}</p> : null}
       {latest && latestAid && all ? (
-        <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="num text-[1.75rem] leading-none font-semibold text-ink">{formatMoney(sum(latestAid))}</span>
           <span className="text-[0.95rem] text-ink-2">
             budgeted for {fyLong(latest)} · <span className="num">{formatShare(sum(latestAid), all.ch70 + all.ugga)}</span> of
-            the aid on this list
+            the statewide total
           </span>
         </p>
       ) : null}
@@ -82,29 +112,26 @@ function PlaceResult({ towns, place, onPick }: { towns: Towns; place: TownPlace;
       {place.kind === 'district' ? (
         <p className="mt-4 max-w-[70ch] text-[0.95rem] text-ink-2">
           A regional school district serves more than one town, so it gets school aid directly and no
-          unrestricted aid. Its member towns are listed separately.
-        </p>
-      ) : (
-        <p className="mt-4 max-w-[70ch] text-[0.95rem] text-ink-2">
-          {latestAid && latestAid.ch70 === 0
-            ? `${place.name} gets no school aid of its own, which usually means its schools belong to a regional district that gets the aid instead. `
-            : 'If some of its students attend a regional school district, that district’s school aid is listed separately. '}
-          {related.length ? (
+          unrestricted aid.
+          {links.length ? (
             <>
-              Districts with {place.name} in the name:{' '}
-              {related.map((d, i) => (
-                <span key={d.id}>
-                  {i ? ', ' : ''}
-                  <button type="button" className="link" onClick={() => onPick(d.id)}>
-                    {d.name}
-                  </button>
-                </span>
-              ))}
-              .
+              {' '}Its students come from: <PlaceLinks links={links} onPick={onPick} />.
             </>
           ) : null}
         </p>
-      )}
+      ) : latestAid?.ch70 === 0 || links.length ? (
+        <p className="mt-4 max-w-[70ch] text-[0.95rem] text-ink-2">
+          {latestAid?.ch70 === 0
+            ? `${place.name} gets no school aid of its own${links.length ? ': its schools belong to a regional district, which gets the aid instead.' : ', which usually means its schools belong to a regional district that gets the aid instead.'} `
+            : null}
+          {links.length ? (
+            <>
+              Regional districts its students attend, each with school aid of its own:{' '}
+              <PlaceLinks links={links} onPick={onPick} />.
+            </>
+          ) : null}
+        </p>
+      ) : null}
     </section>
   );
 }
@@ -223,8 +250,15 @@ export default function TownView() {
 
       <p className="mt-6 max-w-[70ch] text-[0.95rem] text-ink-2">
         <span className="font-semibold text-ink">How to read this.</span> These are the amounts set in each
-        year’s original budget, not payments made, and not adjusted for inflation. They are the two largest
-        kinds of local aid, but not all of it: charter school reimbursements, road money, library aid and
+        year’s original budget, not payments made, and not adjusted for inflation.
+        {data.residentsYear && data.schoolYear ? (
+          <>
+            {' '}Residents are the Census Bureau’s {data.residentsYear} estimate. Students are public school
+            students who live in a town, wherever they go to school, or who are enrolled in a district,
+            in the {schoolYearLabel(data.schoolYear)} school year.
+          </>
+        ) : null}{' '}
+        School aid and unrestricted aid are the two largest kinds of local aid, but not all of it: charter school reimbursements, road money, library aid and
         school construction grants are separate, and so are the charges the state bills back to a town. The
         state’s <a href={CHERRY_SHEETS} rel="noreferrer">cherry sheets</a> give the full account for each
         community. <Link to="/methodology#aid-to-cities-and-towns">Where these numbers come from</Link>.

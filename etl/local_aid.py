@@ -7,16 +7,26 @@ the list as sect3.xlsx. This module reads those files with the standard library 
 
 from __future__ import annotations
 
+import csv
+import json
 import re
 import zipfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
-from config import local_aid_path
+from config import TOWN_POPULATION_PATH, TOWN_POPULATION_YEAR, TOWN_STUDENTS_PATH, local_aid_path
 
 _NS = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
 _SMALL_WORDS = {"OF", "THE", "BY", "AND"}
+# The education department names districts more fully than the budget does ("Tri-County Regional
+# Vocational Technical" vs "TRI COUNTY"); dropping these words lines the two up.
+_DISTRICT_NOISE = {"REGIONAL", "REG", "VOCATIONAL", "TECHNICAL", "AGRICULTURAL", "SCHOOL", "DISTRICT", "AND"}
+_DISTRICT_ALIASES = {"MARTHA S VINEYARD": "MARTHAS VINEYARD", "PIONEER VALLEY": "PIONEER",
+                     "SOUTHERN WORCESTER COUNTY": "SOUTHERN WORCESTER",
+                     "SPENCER E BROOKFIELD": "SPENCER EAST BROOKFIELD", "UP ISLAND": "UPISLAND"}
+_TOWN_ALIASES = {"MANCHESTER BY THE SEA": "MANCHESTER"}  # the budget uses the town's old name
+_MEMBER = "Resident/Member"
 
 
 def _sheet_rows(path: Path) -> list[list[str]]:
@@ -93,6 +103,53 @@ def read_year(year: int) -> dict[str, Any] | None:
     return {"places": places, "stated": stated}
 
 
+def district_key(name: str) -> str:
+    """The budget's key for a district as the education department names it."""
+    key = " ".join(w for w in place_key(name).split(" ") if w not in _DISTRICT_NOISE)
+    return _DISTRICT_ALIASES.get(key, key)
+
+
+def read_population() -> dict[str, dict[str, Any]]:
+    """Each city and town's residents and county: {"ACTON": {"residents": 24021, "county": "Middlesex"}}."""
+    if not TOWN_POPULATION_PATH.exists():
+        return {}
+    with TOWN_POPULATION_PATH.open(encoding="latin-1", newline="") as f:
+        rows = list(csv.DictReader(f))
+    counties = {r["COUNTY"]: r["NAME"].removesuffix(" County") for r in rows if r["SUMLEV"] == "050"}
+    out: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if row["SUMLEV"] != "061":  # one row per city or town
+            continue
+        name = re.sub(r"( Town)? (city|town)$", "", row["NAME"])
+        key = place_key(name)
+        out[_TOWN_ALIASES.get(key, key)] = {"residents": int(row[f"POPESTIMATE{TOWN_POPULATION_YEAR}"]),
+                                "county": counties[row["COUNTY"]]}
+    return out
+
+
+def read_students() -> dict[str, Any] | None:
+    """Public school students by home town and by district attended; None if not pulled.
+
+    {"schoolYear", "byTown": {town: n}, "byDistrict": {district: n},
+     "members": {district: {town: n}}}: members counts only students enrolled as residents of
+    a member town, which is what ties a town to its regional districts.
+    """
+    if not TOWN_STUDENTS_PATH.exists():
+        return None
+    raw = json.loads(TOWN_STUDENTS_PATH.read_text())
+    by_town: dict[str, int] = {}
+    by_district: dict[str, int] = {}
+    members: dict[str, dict[str, int]] = {}
+    for row in raw["rows"]:
+        n = int(row["enr_cnt"])
+        town, dist = place_key(row["town_name"]), district_key(row["dist_name"])
+        by_town[town] = by_town.get(town, 0) + n
+        by_district[dist] = by_district.get(dist, 0) + n
+        if row["enr_reason"] == _MEMBER:
+            members.setdefault(dist, {})[town] = members.get(dist, {}).get(town, 0) + n
+    return {"schoolYear": raw["schoolYear"], "byTown": by_town, "byDistrict": by_district, "members": members}
+
+
 def build_towns(years: list[int]) -> dict[str, Any] | None:
     """towns.json contents for every year with a readable list, or None when there is none."""
     by_year = {y: d for y in years if (d := read_year(y))}
@@ -115,4 +172,33 @@ def build_towns(years: list[int]) -> dict[str, Any] | None:
                           "ugga": sum(p["ugga"] for p in d["places"].values()),
                           "townCh70": sum(p["ch70"] for p in towns),
                           "districtCh70": sum(p["ch70"] for p in dists)}
-    return {"years": sorted(by_year), "totals": totals, "places": places}
+    out: dict[str, Any] = {"years": sorted(by_year), "totals": totals, "places": places}
+    add_people(out)
+    return out
+
+
+def add_people(towns: dict[str, Any]) -> None:
+    """Add residents, students and town-to-district membership to each place, where known."""
+    residents, students = read_population(), read_students()
+    kinds = {p["id"]: p["kind"] for p in towns["places"]}
+    if residents:
+        towns["residentsYear"] = TOWN_POPULATION_YEAR
+    if students:
+        towns["schoolYear"] = students["schoolYear"]
+    for p in towns["places"]:
+        key = p["id"]
+        if p["kind"] == "town":
+            if key in residents:
+                p.update(residents[key])
+            if students and key in students["byTown"]:
+                p["students"] = students["byTown"][key]
+                dists = [{"id": d, "students": m[key]} for d, m in students["members"].items()
+                         if kinds.get(d) == "district" and key in m]
+                if dists:
+                    p["districts"] = sorted(dists, key=lambda d: (-d["students"], d["id"]))
+        elif students and key in students["byDistrict"]:
+            p["students"] = students["byDistrict"][key]
+            mem = [{"id": t, "students": n} for t, n in students["members"].get(key, {}).items()
+                   if kinds.get(t) == "town"]
+            if mem:
+                p["members"] = sorted(mem, key=lambda t: (-t["students"], t["id"]))

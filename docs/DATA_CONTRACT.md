@@ -33,6 +33,10 @@ Fiscal years as `"fy2027"` keys / `2027` numbers. FY runs Jul 1 – Jun 30.
   reads it. FY2024's file is an old-format .xls and is skipped. Output `data/towns.json`:
   `{ years, totals: { "2027": { towns, districts, ch70, ugga, townCh70, districtCh70 } },
   places: [{ id: "ACTON BOXBOROUGH", name, kind: "town" | "district", aid: { "2027": { ch70, ugga } } }] }`.
+  Places also carry, where known: `residents` and `county` (towns; Census Vintage 2025 sub-county
+  estimates, `etl/raw/town_population.csv`), `students`, and `districts` (a town's regional
+  districts) or `members` (a district's towns), each `[{ id, students }]`, from DESE dataset
+  `8xyg-59b2` (`etl/raw/town_students.json`, latest school year). Top level: `residentsYear`, `schoolYear`.
 - Population (per-resident figures only): Census Vintage 2025 state estimates, hard-coded in
   `etl/config.py` (`POPULATION`). `meta.population = { source, byYear: { "2026": { residents, estimate } } }`;
   a fiscal year uses July 1 at its start, or the latest estimate when that is not out yet.

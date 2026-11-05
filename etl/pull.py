@@ -8,7 +8,8 @@ Usage:
 Writes etl/raw/{spending,revenue,capital}_fy{YYYY}.csv and records each pull in
 etl/raw/manifest.json (timestamp, row count, dataset rowsUpdatedAt). Also writes
 etl/raw/official_fy{YYYY}.json: each enacted line item's page on budget.digital.mass.gov,
-and etl/raw/localaid_fy{YYYY}.xlsx: the budget's list of aid to each city, town and district.
+and etl/raw/localaid_fy{YYYY}.xlsx: the budget's list of aid to each city, town and district,
+plus etl/raw/town_population.csv and town_students.json: residents and students for each town.
 Set SOCRATA_APP_TOKEN in the environment to send an app token (optional).
 """
 
@@ -27,7 +28,8 @@ from typing import Any
 import pandas as pd
 import requests
 
-from config import (DATASETS, DEFAULT_YEARS, FIELDS, OFFICIAL_DOWNLOADS, OFFICIAL_SITEMAP, RAW_DIR, Dataset,
+from config import (DATASETS, DEFAULT_YEARS, FIELDS, OFFICIAL_DOWNLOADS, OFFICIAL_SITEMAP, RAW_DIR,
+                    TOWN_POPULATION_PATH, TOWN_POPULATION_URL, TOWN_STUDENTS_PATH, TOWN_STUDENTS_URL, Dataset,
                     column_name, local_aid_path, official_path, raw_path)
 
 PAGE_SIZE = 50_000
@@ -151,6 +153,32 @@ def pull_local_aid(session: requests.Session, year: int, force: bool) -> None:
     print(f"local aid FY{year}: {len(resp.content):,} bytes")
 
 
+def pull_town_figures(session: requests.Session, force: bool) -> None:
+    """Download residents (Census) and students by town and district (state education data)."""
+    if TOWN_POPULATION_PATH.exists() and not force:
+        print(f"skip {TOWN_POPULATION_PATH.name} (cached; --force to refresh)")
+    else:
+        resp = session.get(TOWN_POPULATION_URL, timeout=120)
+        resp.raise_for_status()
+        TOWN_POPULATION_PATH.write_bytes(resp.content)
+        print(f"town population: {len(resp.content):,} bytes")
+    if TOWN_STUDENTS_PATH.exists() and not force:
+        print(f"skip {TOWN_STUDENTS_PATH.name} (cached; --force to refresh)")
+        return
+    plain = {"X-App-Token": None}  # the CTHRU app token is not for this portal
+    latest = session.get(TOWN_STUDENTS_URL, params={"$select": "max(sy) as sy"}, headers=plain, timeout=120)
+    latest.raise_for_status()
+    sy = latest.json()[0]["sy"]
+    resp = session.get(TOWN_STUDENTS_URL, params={"sy": sy, "$limit": str(PAGE_SIZE), "$order": "dist_code,town_name,enr_reason"},
+                       headers=plain, timeout=120)
+    resp.raise_for_status()
+    rows = resp.json()
+    if len(rows) >= PAGE_SIZE:
+        raise RuntimeError("town students: more rows than one page; add paging")
+    TOWN_STUDENTS_PATH.write_text(json.dumps({"schoolYear": int(sy), "rows": rows}) + "\n")
+    print(f"town students {sy}: {len(rows):,} rows")
+
+
 def load_manifest(path: Path = MANIFEST) -> dict[str, Any]:
     """Read the pull manifest, or return an empty one."""
     if path.exists():
@@ -203,6 +231,7 @@ def pull(years: list[int], force: bool) -> None:
     for year in years:
         pull_official(session, year, force)
         pull_local_aid(session, year, force)
+    pull_town_figures(session, force)
 
 
 def main(argv: list[str] | None = None) -> int:

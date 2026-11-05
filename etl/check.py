@@ -26,7 +26,7 @@ from typing import Any
 import pandas as pd
 
 import local_aid
-from config import DATA_DIR, raw_path
+from config import DATA_DIR, POPULATION, raw_path
 
 TOLERANCE = 0.005
 MAX_BYTES = 400 * 1024
@@ -164,6 +164,28 @@ def main() -> int:
                        for p in d["children"]}
                 if "12332350" in gaa:
                     c.close(t["ugga"], gaa["12332350"], f"towns.json FY{y}: unrestricted aid vs line item 12332350")
+
+        town_places = [p for p in towns["places"] if p["kind"] == "town"]
+        if "residentsYear" in towns:
+            # The Census town estimates add up to its state estimate; Devens is not a town.
+            c.ok(sum(p.get("residents", 0) for p in town_places) == POPULATION[towns["residentsYear"]],
+                 "towns.json: town residents do not add up to the state population")
+            missing = [p["id"] for p in town_places if "residents" not in p and p["id"] != "DEVENS"]
+            c.ok(not missing, f"towns.json: no residents for {missing}")
+        if "schoolYear" in towns:
+            latest = str(towns["years"][-1])
+            missing = [p["id"] for p in town_places if "students" not in p and p["id"] not in ("DEVENS", "GOSNOLD")]
+            c.ok(not missing, f"towns.json: no students for {missing}")
+            missing = [p["id"] for p in towns["places"] if p["kind"] == "district" and "students" not in p
+                       and p["aid"].get(latest, {}).get("ch70")]
+            c.ok(not missing, f"towns.json: no students for districts {missing}")
+            missing = [p["id"] for p in towns["places"] if p["kind"] == "district" and "students" in p
+                       and not p.get("members")]
+            c.ok(not missing, f"towns.json: no member towns for districts {missing}")
+            raw = local_aid.read_students()
+            if raw:
+                c.ok(sum(p.get("students", 0) for p in town_places) == sum(raw["byTown"].get(p["id"], 0) for p in town_places),
+                     "towns.json: town students sum")
 
     for path in sorted(DATA_DIR.rglob("*.json")):
         c.ok(path.stat().st_size < MAX_BYTES, f"{path} is {path.stat().st_size:,} bytes (> 400 KB)")
