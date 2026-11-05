@@ -28,6 +28,9 @@ Fiscal years as `"fy2027"` keys / `2027` numbers. FY runs Jul 1 – Jun 30.
   lists one page per enacted line item, `…/summary/fy{YY}/enacted/{area}/{department}/{account}/`. `pull.py`
   saves the account-to-page map as `etl/raw/official_fy{YYYY}.json`; accounts with no page (trusts,
   supplemental-only items) get no link.
+- Population (per-resident figures only): Census Vintage 2025 state estimates, hard-coded in
+  `etl/config.py` (`POPULATION`). `meta.population = { source, byYear: { "2026": { residents, estimate } } }`;
+  a fiscal year uses July 1 at its start, or the latest estimate when that is not out yet.
 - Reference (not scraped for numbers): massbudget.org Budget Browser category tree.
 - Totals sanity (FY2026, from the API on 2026-11-03): enacted $62.22B, spent $69.80B,
   budgeted-fund revenue $73.17B. FY2027: enacted $62.58B, spent so far $22.81B.

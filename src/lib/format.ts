@@ -38,6 +38,20 @@ export function formatMoneyChange(value: number): string {
   return value > 0 ? `+${formatMoney(value)}` : formatMoney(value);
 }
 
+/**
+ * An amount divided among residents: "$9,757", "$84", "$9.09", "less than 1¢".
+ * Whole dollars from $10 up, cents below.
+ */
+export function formatPerResident(amount: number, residents: number): string {
+  if (!residents || !Number.isFinite(amount) || !Number.isFinite(residents)) return '—';
+  const each = Math.abs(amount) / residents;
+  const sign = amount < 0 ? MINUS : '';
+  if (each === 0) return '$0';
+  if (each < 0.005) return 'less than 1¢';
+  if (each < 9.995) return `${sign}$${each.toFixed(2)}`;
+  return `${sign}$${Math.round(each).toLocaleString('en-US')}`;
+}
+
 /** Share of a whole, as "36.8%". Accepts a ratio (0.368). */
 export function formatShare(part: number, whole: number): string {
   if (!whole || !Number.isFinite(part) || !Number.isFinite(whole)) return '—';

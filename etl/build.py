@@ -30,8 +30,8 @@ import pandas as pd
 
 import names
 import revenue_groups
-from config import (CAPITAL, DATA_DIR, DEFAULT_YEARS, MAPPING_CSV, METHODOLOGY_MD, RAW_DIR, REVENUE, SPENDING,
-                    official_path, raw_path)
+from config import (CAPITAL, DATA_DIR, DEFAULT_YEARS, MAPPING_CSV, METHODOLOGY_MD, POPULATION_SOURCE, RAW_DIR,
+                    REVENUE, SPENDING, official_path, population_for, raw_path)
 
 MONEY = ("enacted", "gaa", "actual")
 SOURCE_COLS = {
@@ -567,6 +567,8 @@ def build(years: list[int]) -> dict[str, Any]:
         "totals": totals,
         "coverage": coverage,
         **({"capital": capital_totals} if capital_totals else {}),
+        "population": {"source": POPULATION_SOURCE,
+                       "byYear": {str(y): dict(zip(("residents", "estimate"), population_for(y))) for y in years}},
         "revenueGroups": [{"id": f"rev:{g}", "name": label} for g, label in revenue_groups.GROUPS],
     }
     sizes["meta.json"] = write_json(DATA_DIR / "meta.json", meta)

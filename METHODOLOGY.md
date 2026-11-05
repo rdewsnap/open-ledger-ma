@@ -214,6 +214,18 @@ by the same plus its capital payments, and by all operating spending. It is arit
 takes no view on whether an amount is large. The amount is kept in the page URL (`?amt=65000000`)
 so a comparison can be shared.
 
+## Per-resident figures
+
+Some amounts are also shown per resident: the amount divided by the number of people living in
+Massachusetts. The population is the Census Bureau's estimate for July 1 at the start of the
+fiscal year ([Vintage 2025 state estimates](https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/state/totals/NST-EST2025-ALLDATA.csv)):
+7,073,479 for FY2024, 7,138,560 for FY2025 and 7,154,084 for FY2026. FY2027 uses the FY2026
+figure until a newer estimate is published.
+
+This is an average, not what any person pays or receives. Much of the money comes from businesses
+and the federal government, and spending reaches people very unevenly. For a year in progress,
+the figure covers spending so far.
+
 ## Highlight lens
 
 The **Highlight** control lets a reader pick any spending areas or departments and see them

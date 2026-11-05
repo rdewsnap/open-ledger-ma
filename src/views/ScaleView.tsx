@@ -10,7 +10,7 @@ import { SourceStrip } from '../components/SourceStrip';
 import { areaDescription } from '../lib/areas';
 import { capitalFor } from '../lib/capital';
 import { DataMissingError, loadTree, usingFixture } from '../lib/data';
-import { formatMoney, formatShare, fyLong, fyShort, longDate, monthsInto, partialLabel } from '../lib/format';
+import { formatMoney, formatPerResident, formatShare, fyLong, fyShort, longDate, monthsInto, partialLabel } from '../lib/format';
 import { highlightSet } from '../lib/highlight';
 import {
   buildHierarchy,
@@ -22,6 +22,7 @@ import {
 } from '../lib/treemap';
 import type { Measure } from '../lib/types';
 import { useMediaQuery, useWidth } from '../state/media';
+import { residentsFor } from '../lib/population';
 import { useMeta } from '../state/meta';
 import { useLedgerParams } from '../state/params';
 import { useAsync } from '../state/useAsync';
@@ -122,6 +123,7 @@ export function ScaleView() {
         : 'total spending';
   const yearLabel = partial ? partialLabel(year, partial) : fyLong(year);
   const hlTotal = root ? highlightTotal(root, highlight) : 0;
+  const residents = residentsFor(meta, year);
   const focusCapital = focus && focus.depth > 0 ? capitalFor(meta, year, focus.data.id) : null;
   const verb =
     measure === 'enacted' ? `budgeted for ${fyLong(year)}` : partial ? `spent so far in ${fyLong(year)}` : `spent in ${fyLong(year)}`;
@@ -228,6 +230,14 @@ export function ScaleView() {
                   ·
                 </span>
                 <span className="num">{formatShare(focus.value ?? 0, total)}</span> of {totalLabel}
+                {residents ? (
+                  <>
+                    <span aria-hidden="true" className="px-1.5 text-ink-2/60">
+                      ·
+                    </span>
+                    <span className="num">{formatPerResident(focus.value ?? 0, residents)}</span> per resident
+                  </>
+                ) : null}
                 {focusCapital ? (
                   <>
                     <span aria-hidden="true" className="px-1.5 text-ink-2/60">
@@ -289,6 +299,7 @@ export function ScaleView() {
           area={focus && focus.depth > 0 ? { name: focus.data.name, amount: focus.value ?? 0, capital: focusCapital } : null}
           total={total}
           verb={verb}
+          residents={residents}
           totalLabel={
             measure === 'enacted'
               ? `the whole operating budget for ${fyLong(year)}`

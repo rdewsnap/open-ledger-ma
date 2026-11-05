@@ -9,6 +9,7 @@ import {
   monthYear,
   longDate,
   monthsInto,
+  formatPerResident,
   parseAmount,
   partialLabel,
 } from './format';
@@ -101,5 +102,16 @@ describe('parseAmount', () => {
     expect(parseAmount('abc')).toBeNull();
     expect(parseAmount('65 lots')).toBeNull();
     expect(parseAmount('0')).toBeNull();
+  });
+});
+
+describe('formatPerResident', () => {
+  it('uses whole dollars from $10 and cents below', () => {
+    expect(formatPerResident(69_802_692_201, 7_154_084)).toBe('$9,757');
+    expect(formatPerResident(595_000_000, 7_154_084)).toBe('$83');
+    expect(formatPerResident(65_000_000, 7_154_084)).toBe('$9.09');
+    expect(formatPerResident(20_000, 7_154_084)).toBe('less than 1¢');
+    expect(formatPerResident(0, 7_154_084)).toBe('$0');
+    expect(formatPerResident(100, 0)).toBe('—');
   });
 });

@@ -5,7 +5,8 @@ import { capitalFor } from '../lib/capital';
 import { accountOf } from '../lib/data';
 import { sourcePath } from '../lib/source';
 import { COLORS, SMALL_SECS, treeLeaves, type FlowModel, type ModelNode } from '../lib/flowModel';
-import { formatMoney, formatShare, fyLong } from '../lib/format';
+import { formatMoney, formatPerResident, formatShare, fyLong } from '../lib/format';
+import { residentsFor } from '../lib/population';
 import type { Measure, TreeNode } from '../lib/types';
 import { useMeta } from '../state/meta';
 import { AmountInContext } from './AmountInContext';
@@ -117,6 +118,7 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
   const kind = node?.kind ?? (id.startsWith('sec:') ? 'secretariat' : id.startsWith('rev:') ? 'revenue' : 'program');
   const { meta, partial } = useMeta();
   const capital = kind === 'secretariat' && id !== SMALL_SECS ? capitalFor(meta, year, id) : null;
+  const residents = residentsFor(meta, year);
   const verb =
     measure === 'enacted' ? `budgeted for ${fyLong(year)}` : partial ? `spent so far in ${fyLong(year)}` : `spent in ${fyLong(year)}`;
 
@@ -305,6 +307,12 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
         <span className="num text-[1.75rem] leading-none font-semibold text-ink">{formatMoney(amount)}</span>
         <span className="text-[0.95rem] text-ink-2">
           {kind === 'revenue' ? 'collected' : measureLabel.toLowerCase()} in {fyLong(year)} · {shareLine}
+          {kind !== 'revenue' && residents ? (
+            <>
+              {' · '}
+              <span className="num">{formatPerResident(amount, residents)}</span> per resident
+            </>
+          ) : null}
         </span>
       </p>
       {kind === 'secretariat' && areaDescription(id) ? (
@@ -335,6 +343,7 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
           area={{ name, amount, capital }}
           total={model.spendingTotal}
           verb={verb}
+          residents={residents}
           totalLabel={
             measure === 'enacted'
               ? `the whole operating budget for ${fyLong(year)}`

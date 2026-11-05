@@ -21,6 +21,8 @@ export type Meta = {
   revenueGroups?: { id: string; name: string }[];
   /** Bond-funded capital payments by year, outside every chart total (DATA_CONTRACT "capital"). */
   capital?: Record<string, CapitalYear>;
+  /** Residents on July 1 at the start of each fiscal year (Census estimate), for per-resident figures. */
+  population?: { source: string; byYear: Record<string, { residents: number; estimate: number }> };
   coverage?: Record<string, { mappedAccounts: number; otherAccounts: number; otherBuckets: number; mappedShareActual: number; mappedShareEnacted: number }>;
 };
 

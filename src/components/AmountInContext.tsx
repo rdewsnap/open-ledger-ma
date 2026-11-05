@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { formatMoney, formatShare, parseAmount } from '../lib/format';
+import { Link } from 'react-router';
+import { formatMoney, formatPerResident, formatShare, parseAmount } from '../lib/format';
 import { useLedgerParams } from '../state/params';
 
 export type ContextArea = {
@@ -19,16 +20,19 @@ type Props = {
   verb: string;
   /** What `total` is: "all state operating spending in FY2026". */
   totalLabel: string;
+  /** Massachusetts residents that year; adds a per-resident line when known. */
+  residents?: number | null;
   /** Shown under the box when no area is chosen. */
   hint?: string;
 };
 
 /**
  * "How big is $65M?": the amount as a share of an area's operating spending, of the
- * same plus its capital spending, and of all operating spending. Arithmetic only; the
+ * same plus its capital spending, and of all operating spending, plus the amount per
+ * resident. Arithmetic only; the
  * amount lives in ?amt= so a comparison can be shared.
  */
-export function AmountInContext({ area, total, verb, totalLabel, hint }: Props) {
+export function AmountInContext({ area, total, verb, totalLabel, residents, hint }: Props) {
   const { amount, setAmount } = useLedgerParams();
   const [text, setText] = useState(() => (amount ? formatMoney(amount) : ''));
   const typed = parseAmount(text);
@@ -80,6 +84,12 @@ export function AmountInContext({ area, total, verb, totalLabel, hint }: Props) 
           {area ? line(area.amount, <>what {area.name} {verb}</>) : null}
           {area && withCapital ? line(withCapital, <>the same plus its bond-funded capital spending</>) : null}
           {line(total, totalLabel)}
+          {residents ? (
+            <li className="py-2">
+              <span className="num text-ink">{formatPerResident(amount, residents)}</span> for each
+              Massachusetts resident (<Link to="/methodology#per-resident-figures">how</Link>)
+            </li>
+          ) : null}
         </ul>
       ) : null}
       <p className="mt-2 text-[0.85rem] text-ink-2">

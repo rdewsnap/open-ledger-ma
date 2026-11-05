@@ -21,6 +21,17 @@ SOCRATA_DOMAIN: str = "https://cthru.data.socrata.com"
 OFFICIAL_SITEMAP: str = "https://budget.digital.mass.gov/summary/fy{yy}/sitemap-0.xml"
 DEFAULT_YEARS: tuple[int, ...] = (2024, 2025, 2026, 2027)
 
+# Massachusetts resident population on July 1, from the Census Bureau's Vintage 2025 state
+# estimates (NST-EST2025-ALLDATA, POPESTIMATE{year}). Used only for per-resident figures.
+POPULATION_SOURCE: str = "https://www2.census.gov/programs-surveys/popest/datasets/2020-2025/state/totals/NST-EST2025-ALLDATA.csv"
+POPULATION: dict[int, int] = {2023: 7_073_479, 2024: 7_138_560, 2025: 7_154_084}
+
+
+def population_for(fiscal_year: int) -> tuple[int, int]:
+    """(residents, estimate year) for a fiscal year: July 1 at its start, else the latest estimate."""
+    est = min(fiscal_year - 1, max(POPULATION))
+    return POPULATION[est], est
+
 
 @dataclass(frozen=True)
 class Dataset:
