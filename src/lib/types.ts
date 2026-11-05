@@ -41,6 +41,8 @@ export type TreeNode = {
   gaa: number;
   actual: number;
   other?: true;
+  /** On a program: its page on budget.digital.mass.gov (wording, and the amount at each budget stage). */
+  official?: string;
   /** On an "Other {Department}" bucket: how many line items it adds together. */
   accounts?: number;
   children?: TreeNode[];

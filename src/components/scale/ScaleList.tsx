@@ -117,6 +117,14 @@ export function ScaleList({ focus, colors, highlight, measureLabel, year, onZoom
                     </Link>
                   </>
                 ) : null}
+                {c.data.official ? (
+                  <>
+                    <span aria-hidden="true" className="px-1.5 text-ink-2/60">·</span>
+                    <a href={c.data.official} rel="noreferrer" aria-label={`budget stages for ${c.data.name} on mass.gov`}>
+                      budget stages
+                    </a>
+                  </>
+                ) : null}
               </p>
             </li>
           );

@@ -17,6 +17,8 @@ MAPPING_CSV: Path = ETL_DIR / "mapping.csv"
 METHODOLOGY_MD: Path = ROOT / "METHODOLOGY.md"
 
 SOCRATA_DOMAIN: str = "https://cthru.data.socrata.com"
+# The state's budget site has one page per enacted line item; its sitemap lists them all.
+OFFICIAL_SITEMAP: str = "https://budget.digital.mass.gov/summary/fy{yy}/sitemap-0.xml"
 DEFAULT_YEARS: tuple[int, ...] = (2024, 2025, 2026, 2027)
 
 
@@ -126,6 +128,11 @@ FIELDS: dict[str, tuple[str, ...]] = {"spending": SPENDING_FIELDS, "revenue": RE
 def column_name(field: str) -> str:
     """CSV column for a select expression: the alias of "sum(x) as y", else the field itself."""
     return field.rsplit(" as ", 1)[-1].strip()
+
+
+def official_path(year: int) -> Path:
+    """Path of the cached account-to-official-page map for one fiscal year."""
+    return RAW_DIR / f"official_fy{year}.json"
 
 
 def raw_path(dataset_key: str, year: int) -> Path:

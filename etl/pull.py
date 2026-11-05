@@ -6,7 +6,8 @@ Usage:
     python etl/pull.py --force         # re-download even if cached
 
 Writes etl/raw/{spending,revenue,capital}_fy{YYYY}.csv and records each pull in
-etl/raw/manifest.json (timestamp, row count, dataset rowsUpdatedAt).
+etl/raw/manifest.json (timestamp, row count, dataset rowsUpdatedAt). Also writes
+etl/raw/official_fy{YYYY}.json: each enacted line item's page on budget.digital.mass.gov.
 Set SOCRATA_APP_TOKEN in the environment to send an app token (optional).
 """
 
@@ -15,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -24,7 +26,8 @@ from typing import Any
 import pandas as pd
 import requests
 
-from config import DATASETS, DEFAULT_YEARS, FIELDS, RAW_DIR, Dataset, column_name, raw_path
+from config import (DATASETS, DEFAULT_YEARS, FIELDS, OFFICIAL_SITEMAP, RAW_DIR, Dataset, column_name,
+                    official_path, raw_path)
 
 PAGE_SIZE = 50_000
 MANIFEST = RAW_DIR / "manifest.json"
@@ -104,6 +107,26 @@ def fetch_metadata(session: requests.Session, ds: Dataset) -> dict[str, Any]:
     }
 
 
+LINE_ITEM_PAGE = re.compile(r"<loc>(https://budget\.digital\.mass\.gov/summary/fy\d\d/enacted/"
+                            r"[a-z0-9-]+/[a-z0-9-]+/(\d{8})/?)</loc>")
+
+
+def pull_official(session: requests.Session, year: int, force: bool) -> None:
+    """Map each enacted line item (account number) to its official budget page, from the sitemap."""
+    out = official_path(year)
+    if out.exists() and not force:
+        print(f"skip {out.name} (cached; --force to refresh)")
+        return
+    resp = session.get(OFFICIAL_SITEMAP.format(yy=str(year)[2:]), timeout=120)
+    if resp.status_code == 404:
+        print(f"no official sitemap for FY{year}")
+        return
+    resp.raise_for_status()
+    pages = {m.group(2): m.group(1) for m in LINE_ITEM_PAGE.finditer(resp.text)}
+    out.write_text(json.dumps(dict(sorted(pages.items())), indent=0) + "\n")
+    print(f"official pages FY{year}: {len(pages):,}")
+
+
 def load_manifest(path: Path = MANIFEST) -> dict[str, Any]:
     """Read the pull manifest, or return an empty one."""
     if path.exists():
@@ -153,6 +176,8 @@ def pull(years: list[int], force: bool) -> None:
             }
             save_manifest(manifest)
     save_manifest(manifest)
+    for year in years:
+        pull_official(session, year, force)
 
 
 def main(argv: list[str] | None = None) -> int:

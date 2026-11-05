@@ -31,7 +31,7 @@ import pandas as pd
 import names
 import revenue_groups
 from config import (CAPITAL, DATA_DIR, DEFAULT_YEARS, MAPPING_CSV, METHODOLOGY_MD, RAW_DIR, REVENUE, SPENDING,
-                    raw_path)
+                    official_path, raw_path)
 
 MONEY = ("enacted", "gaa", "actual")
 SOURCE_COLS = {
@@ -95,6 +95,12 @@ def load_capital(years: list[int]) -> pd.DataFrame:
     df["amount"] = pd.to_numeric(df["amount"].replace("", "0"), errors="coerce").fillna(0.0)
     df["department_code"] = df["department_code"].str.strip()
     return df
+
+
+def load_official(year: int) -> dict[str, str]:
+    """Account number to official budget page URL (empty when not pulled)."""
+    path = official_path(year)
+    return json.loads(path.read_text()) if path.exists() else {}
 
 
 def build_capital(year: int, capital: pd.DataFrame, directory: Directory) -> dict[str, Any] | None:
@@ -234,6 +240,7 @@ def build_tree(year: int, spend: pd.DataFrame, homes: pd.DataFrame, mapping: pd.
     raw_name = rows.drop_duplicates("account").set_index("account")["appropriation_account_name"]
     acct = acct.join(homes, how="left")
     acct = acct[(acct[list(MONEY)].abs() > 0.5).any(axis=1)]  # drop all-zero accounts
+    official = load_official(year)
 
     secs: dict[str, dict[str, Any]] = {}
     for (sec, dept), group in acct.groupby(["sec", "dept"], sort=True):
@@ -251,7 +258,8 @@ def build_tree(year: int, spend: pd.DataFrame, homes: pd.DataFrame, mapping: pd.
             dept_node["children"].append({
                 "id": f"prog:{account}", "name": mapping.at[account, "program"],
                 "raw": str(raw_name.get(account, "")).strip(), "code": account,
-                **_money(vals), **({"conservation": True} if cons else {})})
+                **_money(vals), **({"conservation": True} if cons else {}),
+                **({"official": official[account]} if account in official else {})})
         other = group[~group["mapped"]]
         if not other.empty:
             dept_node["children"].append({

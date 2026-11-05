@@ -255,6 +255,14 @@ export function FlowBreakdown({ id, model, full, tree, year, measure, measureLab
         </span>,
       ]);
     }
+    if (treeNode?.official) {
+      facts.push([
+        'Budget stages',
+        <a key="o" href={treeNode.official} rel="noreferrer">
+          governor to final, on mass.gov
+        </a>,
+      ]);
+    }
     blocks = (
       <>
         <div>

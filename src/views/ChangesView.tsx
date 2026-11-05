@@ -316,6 +316,8 @@ export function ChangesView() {
         {fyLong(from)}
         {partialB ? <>; “none yet” means it has $0 so far in {fyLong(to)}</> : null}. Amounts are in
         dollars of each year, not adjusted for inflation. Rows named “Other …” add together a department’s smaller line items; the tag says how many.
+        This page shows what changed, not why; for explanations, see{' '}
+        <Link to="/methodology#who-explains-the-changes">who explains the changes</Link>.
       </p>
 
       <SourceStrip years={[from, to]} />

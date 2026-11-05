@@ -24,6 +24,10 @@ Fiscal years as `"fy2027"` keys / `2027` numbers. FY runs Jul 1 – Jun 30.
   `etl/raw/capital_fy{YYYY}.csv` holds about 80 rows a year. Capital is paid from its own funds
   (General Capital Projects, Highway Capital Projects, Federal Highway Construction), so it never
   overlaps the spending dataset. It is shown beside the charts, never added to their totals.
+- Official line-item pages (linked, not used for numbers): `budget.digital.mass.gov/summary/fy{YY}/sitemap-0.xml`
+  lists one page per enacted line item, `…/summary/fy{YY}/enacted/{area}/{department}/{account}/`. `pull.py`
+  saves the account-to-page map as `etl/raw/official_fy{YYYY}.json`; accounts with no page (trusts,
+  supplemental-only items) get no link.
 - Reference (not scraped for numbers): massbudget.org Budget Browser category tree.
 - Totals sanity (FY2026, from the API on 2026-11-03): enacted $62.22B, spent $69.80B,
   budgeted-fund revenue $73.17B. FY2027: enacted $62.58B, spent so far $22.81B.
@@ -63,6 +67,7 @@ type Node = {
   enacted: number; gaa: number; actual: number;
   conservation?: true;   // set on EEA secretariat, DCR + DFG departments and their descendants
   other?: true;          // synthetic "Other …" bucket
+  official?: string;     // programs: page on budget.digital.mass.gov (wording, amount at each budget stage)
   children?: Node[];
 }
 // root: { id:"root", name:"Massachusetts state budget", enacted, gaa, actual, children: Node[] /* secretariats */ }
