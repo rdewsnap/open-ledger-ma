@@ -18,6 +18,8 @@ METHODOLOGY_MD: Path = ROOT / "METHODOLOGY.md"
 
 SOCRATA_DOMAIN: str = "https://cthru.data.socrata.com"
 # The state's budget site has one page per enacted line item; its sitemap lists them all.
+# Its downloads page links sect3.xlsx: Chapter 70 and unrestricted aid for every city, town and district.
+OFFICIAL_DOWNLOADS: str = "https://budget.digital.mass.gov/summary/fy{yy}/downloads/"
 OFFICIAL_SITEMAP: str = "https://budget.digital.mass.gov/summary/fy{yy}/sitemap-0.xml"
 DEFAULT_YEARS: tuple[int, ...] = (2024, 2025, 2026, 2027)
 
@@ -139,6 +141,11 @@ FIELDS: dict[str, tuple[str, ...]] = {"spending": SPENDING_FIELDS, "revenue": RE
 def column_name(field: str) -> str:
     """CSV column for a select expression: the alias of "sum(x) as y", else the field itself."""
     return field.rsplit(" as ", 1)[-1].strip()
+
+
+def local_aid_path(year: int) -> Path:
+    """Path of the cached Section 3 local aid spreadsheet for one fiscal year."""
+    return RAW_DIR / f"localaid_fy{year}.xlsx"
 
 
 def official_path(year: int) -> Path:

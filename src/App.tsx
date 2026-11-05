@@ -12,6 +12,7 @@ const ChangesView = lazy(() => import('./views/ChangesView'));
 // react-markdown and METHODOLOGY.md are only needed on this route.
 const MethodologyPage = lazy(() => import('./components/methodology/MethodologyPage'));
 const SourceView = lazy(() => import('./views/SourceView'));
+const TownView = lazy(() => import('./views/TownView'));
 
 function Shell({ children }: { children: React.ReactNode }) {
   return (
@@ -67,6 +68,14 @@ export function App() {
               element={
                 <Lazy eyebrow="Changes" title="What changed, program by program">
                   <ChangesView />
+                </Lazy>
+              }
+            />
+            <Route
+              path="town"
+              element={
+                <Lazy eyebrow="Your town" title="What the state sends your city or town">
+                  <TownView />
                 </Lazy>
               }
             />

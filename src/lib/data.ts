@@ -1,4 +1,4 @@
-import type { DiffFile, Flows, Measure, Meta, SourceInfo, TreeNode } from './types';
+import type { DiffFile, Flows, Measure, Meta, SourceInfo, Towns, TreeNode } from './types';
 
 export class DataMissingError extends Error {
   constructor(public url: string) {
@@ -52,6 +52,7 @@ export const dataUrl = {
   flows: (year: number, measure: Measure) =>
     measure === 'enacted' ? `/data/fy${year}/flows_enacted.json` : `/data/fy${year}/flows.json`,
   diff: (a: number, b: number) => `/data/diff/fy${a}_fy${b}.json`,
+  towns: () => '/data/towns.json',
 };
 
 export function loadMeta(): Promise<Meta> {
@@ -71,6 +72,11 @@ export function loadFlows(year: number, measure: Measure): Promise<Flows> {
 /** Year-over-year program changes. No dev fixture: a missing file is reported as missing. */
 export function loadDiff(a: number, b: number): Promise<DiffFile> {
   return load(dataUrl.diff(a, b), () => Promise.reject(new DataMissingError(dataUrl.diff(a, b))));
+}
+
+/** Aid to each city, town and regional school district. No dev fixture. */
+export function loadTowns(): Promise<Towns> {
+  return load(dataUrl.towns(), () => Promise.reject(new DataMissingError(dataUrl.towns())));
 }
 
 /** True when the year is still open (FY in progress). */

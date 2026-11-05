@@ -215,6 +215,26 @@ by the same plus its capital payments, and by all operating spending. It is arit
 takes no view on whether an amount is large. The amount is kept in the page URL (`?amt=65000000`)
 so a comparison can be shared.
 
+## Aid to cities and towns
+
+The **Your town** page shows two payments the budget sets for every city, town and regional school
+district: **Chapter 70 school aid** and **Unrestricted General Government Aid**. The amounts come
+from Section 3 of each year's enacted budget, which the state publishes as a spreadsheet on
+[budget.digital.mass.gov](https://budget.digital.mass.gov/summary/fy27/local-aid/). FY2025 through
+FY2027 are included; the FY2024 file is in an older format the pipeline does not read.
+
+- These are amounts in the original budget, not payments made during the year.
+- A regional school district gets its school aid directly, so a town whose schools are regional
+  shows little or no school aid of its own. The page does not know which towns belong to which
+  district; it only points to districts with the town's name in theirs.
+- Other local aid is not included: charter school reimbursements, Chapter 90 road money, library
+  aid, school construction grants, and the charges the state bills back to a community. The
+  Division of Local Services' [cherry sheets](https://www.mass.gov/cherry-sheet-estimates)
+  give the full account.
+- The unrestricted aid on the list adds up to its budget line item (1233-2350); `make check`
+  confirms this. Chapter 70 on the list can be larger than line item 7061-0008, because part of it
+  is paid from other line items.
+
 ## Per-resident figures
 
 Some amounts are also shown per resident: the amount divided by the number of people living in

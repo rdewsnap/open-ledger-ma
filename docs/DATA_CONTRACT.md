@@ -28,6 +28,11 @@ Fiscal years as `"fy2027"` keys / `2027` numbers. FY runs Jul 1 – Jun 30.
   lists one page per enacted line item, `…/summary/fy{YY}/enacted/{area}/{department}/{account}/`. `pull.py`
   saves the account-to-page map as `etl/raw/official_fy{YYYY}.json`; accounts with no page (trusts,
   supplemental-only items) get no link.
+- Local aid by community: `sect3.xlsx`, linked from `budget.digital.mass.gov/summary/fy{YY}/downloads/`
+  (Section 3 of the enacted budget). `pull.py` saves it as `etl/raw/localaid_fy{YYYY}.xlsx`; `etl/local_aid.py`
+  reads it. FY2024's file is an old-format .xls and is skipped. Output `data/towns.json`:
+  `{ years, totals: { "2027": { towns, districts, ch70, ugga, townCh70, districtCh70 } },
+  places: [{ id: "ACTON BOXBOROUGH", name, kind: "town" | "district", aid: { "2027": { ch70, ugga } } }] }`.
 - Population (per-resident figures only): Census Vintage 2025 state estimates, hard-coded in
   `etl/config.py` (`POPULATION`). `meta.population = { source, byYear: { "2026": { residents, estimate } } }`;
   a fiscal year uses July 1 at its start, or the latest estimate when that is not out yet.

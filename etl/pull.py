@@ -7,7 +7,8 @@ Usage:
 
 Writes etl/raw/{spending,revenue,capital}_fy{YYYY}.csv and records each pull in
 etl/raw/manifest.json (timestamp, row count, dataset rowsUpdatedAt). Also writes
-etl/raw/official_fy{YYYY}.json: each enacted line item's page on budget.digital.mass.gov.
+etl/raw/official_fy{YYYY}.json: each enacted line item's page on budget.digital.mass.gov,
+and etl/raw/localaid_fy{YYYY}.xlsx: the budget's list of aid to each city, town and district.
 Set SOCRATA_APP_TOKEN in the environment to send an app token (optional).
 """
 
@@ -26,8 +27,8 @@ from typing import Any
 import pandas as pd
 import requests
 
-from config import (DATASETS, DEFAULT_YEARS, FIELDS, OFFICIAL_SITEMAP, RAW_DIR, Dataset, column_name,
-                    official_path, raw_path)
+from config import (DATASETS, DEFAULT_YEARS, FIELDS, OFFICIAL_DOWNLOADS, OFFICIAL_SITEMAP, RAW_DIR, Dataset,
+                    column_name, local_aid_path, official_path, raw_path)
 
 PAGE_SIZE = 50_000
 MANIFEST = RAW_DIR / "manifest.json"
@@ -127,6 +128,29 @@ def pull_official(session: requests.Session, year: int, force: bool) -> None:
     print(f"official pages FY{year}: {len(pages):,}")
 
 
+SECT3_LINK = re.compile(r'href="(/summary/fy\d\d/static/[0-9a-f]+/sect3\.xlsx)"')
+
+
+def pull_local_aid(session: requests.Session, year: int, force: bool) -> None:
+    """Download the Section 3 local aid spreadsheet linked from the budget site's downloads page."""
+    out = local_aid_path(year)
+    if out.exists() and not force:
+        print(f"skip {out.name} (cached; --force to refresh)")
+        return
+    page = session.get(OFFICIAL_DOWNLOADS.format(yy=str(year)[2:]), timeout=120)
+    link = SECT3_LINK.search(page.text) if page.ok else None
+    if not link:
+        print(f"no local aid list for FY{year}")
+        return
+    resp = session.get(f"https://budget.digital.mass.gov{link.group(1)}", timeout=120)
+    resp.raise_for_status()
+    if not resp.content.startswith(b"PK"):  # FY2024's file is an old-format .xls under an .xlsx name
+        print(f"local aid list for FY{year} is not a readable .xlsx; skipped")
+        return
+    out.write_bytes(resp.content)
+    print(f"local aid FY{year}: {len(resp.content):,} bytes")
+
+
 def load_manifest(path: Path = MANIFEST) -> dict[str, Any]:
     """Read the pull manifest, or return an empty one."""
     if path.exists():
@@ -178,6 +202,7 @@ def pull(years: list[int], force: bool) -> None:
     save_manifest(manifest)
     for year in years:
         pull_official(session, year, force)
+        pull_local_aid(session, year, force)
 
 
 def main(argv: list[str] | None = None) -> int:

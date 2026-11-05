@@ -26,6 +26,26 @@ export type Meta = {
   coverage?: Record<string, { mappedAccounts: number; otherAccounts: number; otherBuckets: number; mappedShareActual: number; mappedShareEnacted: number }>;
 };
 
+/** Chapter 70 school aid and unrestricted aid budgeted for one place in one year. */
+export type TownAid = { ch70: number; ugga: number };
+
+export type TownPlace = {
+  /** Upper-case name as the state lists it: "ACTON BOXBOROUGH". */
+  id: string;
+  name: string;
+  /** A city or town, or a regional school district (which gets school aid only). */
+  kind: 'town' | 'district';
+  /** Keyed by fiscal year; a year is absent when the place is not on that year's list. */
+  aid: Record<string, TownAid>;
+};
+
+/** data/towns.json: the budget's Section 3 local aid lists (DATA_CONTRACT "towns"). */
+export type Towns = {
+  years: number[];
+  totals: Record<string, { towns: number; districts: number; ch70: number; ugga: number; townCh70: number; districtCh70: number }>;
+  places: TownPlace[];
+};
+
 export type CapitalYear = {
   total: number;
   /** Keyed by secretariat id (sec:EEA); areas with no capital payments are absent. */

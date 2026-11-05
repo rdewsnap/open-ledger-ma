@@ -4,6 +4,7 @@ Inputs:  etl/raw/*.csv (from pull.py), etl/raw/manifest.json, etl/mapping.csv
 Outputs: data/meta.json
          data/fy{YYYY}/tree.json, flows.json, flows_enacted.json
          data/diff/fy{A}_fy{B}.json for every pair of years A < B
+         data/towns.json (aid to each city, town and regional school district)
          METHODOLOGY.md totals table (between the totals markers)
 
 Usage:
@@ -28,6 +29,7 @@ from typing import Any
 
 import pandas as pd
 
+import local_aid
 import names
 import revenue_groups
 from config import (CAPITAL, DATA_DIR, DEFAULT_YEARS, MAPPING_CSV, METHODOLOGY_MD, POPULATION_SOURCE, RAW_DIR,
@@ -543,6 +545,10 @@ def build(years: list[int]) -> dict[str, Any]:
     for a, b in itertools.combinations(years, 2):
         sizes[f"diff/fy{a}_fy{b}.json"] = write_json(DATA_DIR / "diff" / f"fy{a}_fy{b}.json",
                                                      build_diff(a, b, trees[a], trees[b]))
+
+    towns = local_aid.build_towns(years)
+    if towns:
+        sizes["towns.json"] = write_json(DATA_DIR / "towns.json", towns)
 
     meta = {
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

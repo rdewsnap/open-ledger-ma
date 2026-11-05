@@ -10,6 +10,7 @@ const NAV = [
   { to: '/', label: 'Flow', end: true },
   { to: '/scale', label: 'Scale' },
   { to: '/changes', label: 'Changes' },
+  { to: '/town', label: 'Your town' },
   { to: '/methodology', label: 'Methodology' },
 ];
 

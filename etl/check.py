@@ -25,6 +25,7 @@ from typing import Any
 
 import pandas as pd
 
+import local_aid
 from config import DATA_DIR, raw_path
 
 TOLERANCE = 0.005
@@ -141,6 +142,28 @@ def main() -> int:
             c.ok(sum(r["actualA"] for r in diff["rows"]) == trees[a]["actual"], f"{path.name}: actualA sum")
             c.ok(sum(r["actualB"] for r in diff["rows"]) == trees[b]["actual"], f"{path.name}: actualB sum")
             c.ok(sum(r["enactedB"] for r in diff["rows"]) == trees[b]["enacted"], f"{path.name}: enactedB sum")
+
+    towns_path = DATA_DIR / "towns.json"
+    if towns_path.exists():
+        towns = load(towns_path)
+        for y in towns["years"]:
+            t = towns["totals"][str(y)]
+            listed = [p["aid"][str(y)] for p in towns["places"] if str(y) in p["aid"]]
+            c.ok(sum(a["ch70"] for a in listed) == t["ch70"], f"towns.json FY{y}: Chapter 70 sum")
+            c.ok(sum(a["ugga"] for a in listed) == t["ugga"], f"towns.json FY{y}: unrestricted aid sum")
+            c.ok(t["towns"] >= 351, f"towns.json FY{y}: only {t['towns']} cities and towns")
+            raw_year = local_aid.read_year(y)
+            stated = (raw_year or {}).get("stated", {}).get("TOTAL MUNICIPAL AND REGIONAL AID")
+            if stated:  # the spreadsheet's own total row
+                c.close(t["ch70"], stated["ch70"], f"towns.json FY{y}: Chapter 70 vs the list's stated total")
+                c.close(t["ugga"], stated["ugga"], f"towns.json FY{y}: unrestricted aid vs the list's stated total")
+            if y in trees:
+                # Unrestricted aid is one line item (1233-2350), so the list must add up to its
+                # original budget. Chapter 70 is not compared: part of it is paid from other items.
+                gaa = {p.get("code"): p["gaa"] for s in trees[y]["children"] for d in s["children"]
+                       for p in d["children"]}
+                if "12332350" in gaa:
+                    c.close(t["ugga"], gaa["12332350"], f"towns.json FY{y}: unrestricted aid vs line item 12332350")
 
     for path in sorted(DATA_DIR.rglob("*.json")):
         c.ok(path.stat().st_size < MAX_BYTES, f"{path} is {path.stat().st_size:,} bytes (> 400 KB)")
