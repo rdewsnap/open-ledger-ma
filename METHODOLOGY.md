@@ -15,11 +15,12 @@ from scratch.
 | Revenue (collected) | CTHRU "Commonwealth Revenue Collections" | `kcy7-ivxi` | [dataset page](https://cthru.data.socrata.com/d/kcy7-ivxi) · [API](https://cthru.data.socrata.com/resource/kcy7-ivxi.json) | `fund_category_name = 'Budgeted Funds'` |
 | Capital spending (shown beside the charts, not in them) | CTHRU "Comptroller of the Commonwealth Spending" | `pegc-naaa` | [dataset page](https://cthru.data.socrata.com/d/pegc-naaa) · [API](https://cthru.data.socrata.com/resource/pegc-naaa.json) | `appropriation_type like '(2CN)%'` |
 
-Both datasets are on the Socrata portal at `cthru.data.socrata.com` and were pulled with the
-SODA API on **2026-11-03**. The exact pull time of each file, and each dataset's
-`rowsUpdatedAt` timestamp at the time of the pull, are recorded in `etl/raw/manifest.json` and
-copied into `data/meta.json` (`sources.*.pulled`, `sources.*.rowsUpdatedAt`). The spending
-dataset reported its rows as last updated 2026-11-03; the revenue dataset reported 2026-10-27.
+All three datasets are on the Socrata portal at `cthru.data.socrata.com` and are pulled with the
+SODA API. The data is refreshed automatically every Monday: a scheduled job
+([`.github/workflows/refresh-data.yml`](.github/workflows/refresh-data.yml)) pulls every year
+again, rebuilds the files, runs the checks, and publishes only if they pass. The date of the
+latest pull, and each dataset's `rowsUpdatedAt` timestamp at that time, are in `data/meta.json`
+(`sources.*.pulled`, `sources.*.rowsUpdatedAt`) and shown at the bottom of each chart page.
 
 Any program on the site can be traced to its source rows with a query such as
 `https://cthru.data.socrata.com/resource/kv7m-35wn.json?fiscal_year=2026&appropriation_account_number=40000500`.
@@ -276,9 +277,9 @@ Open Ledger MA is not affiliated with any of them, and listing a source is not a
   rather than "ended".
 - **Amounts are nominal.** All figures are in dollars of each year, not adjusted for inflation.
 - **Closed years can still move slightly.** CTHRU is updated daily; late adjustments to FY2026
-  can change totals after the fact. Re-running `make pull FORCE=1 build` picks them up.
+  can change totals after the fact. The weekly refresh picks them up.
 - **Supplemental budgets** are included in "Budgeted" when CTHRU has recorded them. Supplemental
-  budgets passed after a pull are not reflected until the next pull.
+  budgets passed after a pull are not reflected until the next weekly refresh.
 - **Off-budget trusts and non-budgeted funds** are outside this picture. The spending dataset
   covers appropriated accounts and other spending authorizations recorded in the state
   accounting system; the revenue side is limited to budgeted funds. Capital (bond-funded)

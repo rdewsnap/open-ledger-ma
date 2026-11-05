@@ -60,6 +60,11 @@ METHODOLOGY.md
 Static build in `dist/`, served by Cloudflare at openledgerma.org.
 Run `pnpm deploy` after `wrangler login`.
 
+The data refreshes itself: `.github/workflows/refresh-data.yml` runs every Monday (or on demand from
+the Actions tab), pulls CTHRU again, rebuilds and checks the data, commits it and deploys. It needs
+the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Run `git pull` before
+working locally so you have the latest data.
+
 ## Privacy
 
 No cookies and no ads. Visits are counted with Cloudflare Web Analytics, which sets no cookies
